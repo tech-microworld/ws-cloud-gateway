@@ -1,0 +1,5 @@
+/proxy_temp/
+/scgi_temp/
+/uwsgi_temp/
+.idea/
+*.log

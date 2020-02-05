@@ -1,0 +1,21 @@
+{
+    "appName": "resty-gateway",
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379
+    },
+    "discovery": {
+        "user": [
+            {
+                "host": "192.168.1.110",
+                "port": "1025",
+                "weight": 1
+            },
+            {
+                "host": "192.168.1.110",
+                "port": "1024",
+                "weight": 2
+            }
+        ]
+    }
+}
