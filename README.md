@@ -5,7 +5,7 @@
 ### 依赖
 
 - [resty.roundrobin](https://github.com/openresty/lua-resty-balancer/blob/master/lib/resty/roundrobin.lua)
--[lua-resty-jit-uuid](https://github.com/thibaultCha/lua-resty-jit-uuid)
+- [lua-resty-jit-uuid](https://github.com/thibaultCha/lua-resty-jit-uuid)
 
 
 
