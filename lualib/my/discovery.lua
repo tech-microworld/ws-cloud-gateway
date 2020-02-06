@@ -22,7 +22,7 @@ _M.get_service_list_by_path = function(service_name)
     local discovery = config.get(const.DISCOVERY)
     local list = discovery[service_name]
     if not list then
-        ngx.log(ngx.ERR, "discovery none server list for: " .. service)
+        ngx.log(ngx.ERR, "discovery none server list for: " .. service_name)
     end
     return list
 end
