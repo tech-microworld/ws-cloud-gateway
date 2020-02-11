@@ -4,19 +4,39 @@ local const = require("my.const")
 local _M = {}
 
 local app_config = {}
+local app_env = nil
 
-_M.load = function (config_file)
-    ngx.log(ngx.ERR, "load config file: " .. config_file);
-    local confFile = io.open(config_file, "r");
-    local confStr = confFile:read("*a");
-    ngx.log(ngx.ERR, "load cnfig: " .. confStr);
-    confFile:close();
-    app_config = cjson.decode(confStr);
+local config = {
+    test = {
+        appName = "resty-gateway",
+        discovery = {
+            etcd = {
+                http_host = "http://192.168.1.102:2379",
+                etcdctl_api = "3",
+                api_prefix = "/v3",
+                service_register_path = "/micros/service"
+            },
+            open_api_prefix = "/open/api",
+            inner_api_prefix = "/inner/api"
+        }
+    },
+    prod = {}
+}
+
+_M.init = function (env)
+    app_env = env
+    ngx.log(ngx.ERR, "config init env: " .. env);
+    app_config = config[env]
     ngx.log(ngx.ERR, "appName: " .. app_config[const.APP_NAME]);
 end
 
 _M.get = function (key)
     return app_config[key]
+end
+
+-- 是否是测试环境
+_M.is_test = function ()
+    return app_env == "test"
 end
 
 return _M

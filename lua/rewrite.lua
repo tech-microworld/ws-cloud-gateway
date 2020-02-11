@@ -23,11 +23,11 @@ local function rewrite_uri()
     end
 
     ngx.var.target_service_name = service_name
-    ngx.log(ngx.ERR, "service_name: " .. service_name)
+    ngx.log(ngx.INFO, "service_name: " .. service_name)
 
     local target_uri = ""
     path = utils.str_sub(path, #service_name + 1)
-    ngx.log(ngx.ERR, "path: " .. path)
+    ngx.log(ngx.INFO, "path: " .. path)
 
     if utils.start_with(uri, const.OPEN_API) then
         target_uri = table.concat({const.OPEN_API, path}, "")
@@ -35,7 +35,7 @@ local function rewrite_uri()
         target_uri = path
     end
 
-    ngx.log(ngx.ERR, "target_uri: " .. target_uri)
+    ngx.log(ngx.INFO, "target_uri: " .. target_uri)
     ngx.req.set_uri(target_uri, false)
 end
 

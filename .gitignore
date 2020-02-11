@@ -3,3 +3,4 @@
 /uwsgi_temp/
 .idea/
 *.log
+nginx.pid

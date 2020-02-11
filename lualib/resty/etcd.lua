@@ -42,14 +42,7 @@ function _M.new(opts)
 
     if protocol == "v3" then
         -- if opts special the api_prefix,no need to check version
-        if not opts.api_prefix then
-            ngx.log(ngx.ERR, "not opts.api_prefix: " .. opts.api_prefix);
-        end
-        if not utils.has_value(prefix_v3, opts.api_prefix) then
-            ngx.log(ngx.ERR, "has_value");
-        end
         if not opts.api_prefix or not utils.has_value(prefix_v3, opts.api_prefix) then
-            
             local ver, err = etcd_version(opts)
             if not ver then
                 return nil, err

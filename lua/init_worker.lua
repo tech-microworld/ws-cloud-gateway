@@ -1,12 +1,9 @@
 local etcd = require("resty.etcd")
+local cjson = require("cjson")
+local discovery = require("my.discovery")
+local worker_id = ngx.worker.id()
 
-ngx.log(ngx.ERR, "init worker.......");
+ngx.log(ngx.INFO, "init worker: " .. worker_id)
 
-local cli, err = etcd.new({protocol = "v2", api_prefix = "3.4."})
-ngx.log(ngx.ERR, "etcd cli: " .. type(cli.watchdir));
-if err ~= nil then
-    ngx.log(ngx.ERR, "etcd error: " .. err or "unkonw");
-end
+discovery.init()
 
-local res, err = cli:watchdir('/micros/service')
-ngx.log(ngx.ERR, "watchdir: " .. type(res));

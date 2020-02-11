@@ -23,4 +23,16 @@ _M.table_to_string = function(t)
     return cjson.encode(t)
 end
 
+_M.nginx_shutdown = function(pid_path)
+    pid_path = pid_path or ngx.config.prefix() .. "/logs/nginx.pid"
+    local f, err = io.open(pid_path, "r")
+    if not f then
+        return
+    end
+    local pid = f:read()
+    f:close()
+    ngx.log(ngx.ERR, "kill nginx pid: " .. pid);
+    os.execute("kill -TERM " .. pid)
+end
+
 return _M

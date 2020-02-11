@@ -77,7 +77,7 @@ local function _request_uri(self, method, uri, opts, timeout, ignore_auth)
         return nil, err
     end
 
-    utils.log_info('res body:', res.body, 'status:', res.status)
+    utils.log_info('res body:', res.body, ', status:', res.status)
 
     if res.status >= 500 then
         return nil, "invalid response code: " .. res.status
@@ -507,7 +507,13 @@ local function request_chunk(self, method, host, port, path, opts, timeout)
     end
 
     if res.status >= 300 then
-        return nil, "failed to watch data, response code: " .. res.status
+        local log_msg = {
+            "failed to watch data, response code: ",
+            res.status,
+            ", errmsg: ",
+            res.body_reader()
+        }
+        return nil, table.concat(log_msg, "")
     end
 
     return function()
@@ -528,6 +534,11 @@ local function request_chunk(self, method, host, port, path, opts, timeout)
                     event.kv.value = decode_json(event.kv.value)
                 end
                 event.kv.key = decode_base64(event.kv.key)
+                if event.prev_kv then
+                    event.prev_kv.value = decode_base64(event.prev_kv.value)
+                    event.prev_kv.value = decode_json(event.prev_kv.value)
+                    event.prev_kv.key = decode_base64(event.prev_kv.key)
+                end
             end
         end
 
@@ -573,7 +584,7 @@ local function watch(self, key, attr)
 
     local prev_kv
     if attr.prev_kv then
-        prev_kv = attr.prev_kv and 'true' or 'false'
+        prev_kv = attr.prev_kv and true or false
     end
 
     local start_revision
@@ -588,12 +599,12 @@ local function watch(self, key, attr)
 
     local progress_notify
     if attr.progress_notify then
-        progress_notify = attr.progress_notify and 'true' or 'false'
+        progress_notify = attr.progress_notify and true or false
     end
 
     local fragment
     if attr.fragment then
-        fragment = attr.fragment and 'true' or 'false'
+        fragment = attr.fragment and true or false
     end
 
     local filters
