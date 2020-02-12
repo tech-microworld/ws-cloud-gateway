@@ -10,7 +10,7 @@ local service_cache = ngx.shared.discovery_service_cache
 local _M = {}
 
 -- 100年，即永不超时
-local timeout = 10
+local timeout = 60
 local etcd_cli = nil
 local delete_type = "DELETE"
 local etcd_connect_config = {
@@ -40,7 +40,6 @@ local get_service_name_by_path = function(path)
     else
         service = path
     end
-    ngx.log(ngx.INFO, "service: " .. service)
     return service
 end
 
@@ -52,7 +51,6 @@ local get_all_service_nodes = function()
     for _, name in ipairs(service_cache:get_keys()) do
         service_nodes[name] = service_cache:get(name)
     end
-    ngx.log(ngx.INFO, "service_nodes: " .. cjson.encode(service_nodes))
     return service_nodes
 end
 
@@ -74,7 +72,6 @@ local function put_service_node(node_data, is_remove)
     if is_remove == nil then
         is_remove = false
     end
-    ngx.log(ngx.INFO, "update node: " .. cjson.encode(node_data))
     local path = utils.str_sub(node_data.key, #etcd_config.service_register_path + 2)
     local service_name = get_service_name_by_path(path)
     local service_upstream = utils.str_sub(path, #service_name + 2)
@@ -82,8 +79,10 @@ local function put_service_node(node_data, is_remove)
     local nodes = get_service_nodes(service_name) or {}
     if is_remove then
         nodes[service_upstream] = nil
+        ngx.log(ngx.INFO, table.concat({"remove service node: ", path}, ", "))
     else
         nodes[service_upstream] = weight
+        ngx.log(ngx.INFO, table.concat({"add service node:", path, weight}, " "))
     end
     service_cache:set(service_name, cjson.encode(nodes))
 end
@@ -118,7 +117,6 @@ local function watch_services()
             end
         end
     end
-    ngx.log(ngx.ERR, "watcher exit")
 end
 
 -- 加载服务节点注册信息
@@ -136,7 +134,6 @@ local function load_services()
 
     etcd_watch_opts.start_revision = resp.body.header.revision + 1
     if tab_nkeys(resp.body.kvs) > 0 then
-        ngx.log(ngx.ERR, "load services info: " .. cjson.encode(resp.body.kvs))
         for _, node in ipairs(resp.body.kvs) do
             put_service_node(node)
         end
@@ -162,7 +159,7 @@ end
 _M.init = function()
     local ok, err = ngx.timer.at(0, init_etcd)
     if not ok then
-        ngx.log(ngx.ERR, "failed to init etcd: ", err)
+        ngx.log(ngx.ERR, "failed to init discovery: ", err)
     end
 end
 
