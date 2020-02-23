@@ -14,7 +14,7 @@ github: <https://github.com/fengjx/resty-gateway>
 
 ### 整体架构
 
-![整体架构](http://blog.qiniu.fengjx.com/openresty/resty-gateway.jpg)
+![整体架构](/res/resty-gateway.jpg)
 
 服务启动时，将自己的节点信息注册到etcd，包括：服务名称、ip、端口
 
