@@ -9,7 +9,6 @@ local service_cache = ngx.shared.discovery_service_cache
 
 local _M = {}
 
--- 100年，即永不超时
 local timeout = 60
 local etcd_cli = nil
 local delete_type = "DELETE"
