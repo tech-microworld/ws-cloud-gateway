@@ -1,0 +1,14 @@
+{
+    "appName": "resty-gateway",
+    "env": "test",
+    "etcd": {
+        "http_host": "http://192.168.41.47:2379",
+        "data_prefix": "/my/cloud/"
+    },
+    "plugins": [
+        "default_plugin",
+        "discovery_plugin",
+        "tracing_plugin",
+        "rewrite_plugin"
+    ]
+}

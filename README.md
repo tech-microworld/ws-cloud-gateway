@@ -32,5 +32,5 @@ github: <https://github.com/fengjx/resty-gateway>
 
 ### 文档
 
-详细文档查看：<https://blog.fengjx.com/openresty/gateway/>
+详细文档查看：<https://blog.fengjx.com/openresty/gateway.html>
 
