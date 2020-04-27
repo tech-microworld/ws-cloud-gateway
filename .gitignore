@@ -4,3 +4,9 @@
 .idea/
 *.log
 nginx.pid
+t/servroot
+conf/app-dev.json
+deps
+
+.travis/openwhisk-utilities
+bin/lj-releng
