@@ -36,7 +36,7 @@ function _M.do_in_rewrite(route)
 
     local rewrite_replace = route.props.rewrite_replace
     if not rewrite_url_regex then
-        log.info("rewrite props[replace_regex] not set")
+        log.info("rewrite props[rewrite_replace] not set")
         return
     end
 

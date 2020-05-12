@@ -79,7 +79,7 @@ local function query_routes()
         end
         return routes, nil
     end
-    return nil, "empty"
+    return nil, "route is empty"
 end
 
 _M.query_routes = query_routes
