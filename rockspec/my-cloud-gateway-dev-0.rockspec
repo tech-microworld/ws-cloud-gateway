@@ -1,9 +1,9 @@
-package = "resty-gateway"
+package = "my-cloud-gateway"
 version = "dev-0"
 supported_platforms = {"linux", "macosx"}
 
 source = {
-    url = "git@github.com:fengjx/resty-gateway.git",
+    url = "git@github.com:tech-microworld/my-cloud-gateway.git",
     branch = "v1.0",
 }
 
@@ -21,7 +21,8 @@ dependencies = {
     "lua-resty-jwt = 0.2.0",
     "lua-resty-cookie = 0.1.0",
     "lua-resty-session = 2.24",
-    "lua-resty-prometheus = 1.0"
+    "lua-resty-prometheus = 1.0",
+    "lua-resty-radixtree = 1.8"
 }
 
 build = {

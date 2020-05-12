@@ -1,4 +1,4 @@
-export config.file=conf/app.json
+export config.file=conf/app-dev.json
 OR_EXEC ?= $(shell which openresty)
 LUAROCKS_VER ?= $(shell luarocks --version | grep -E -o  "luarocks [0-9]+.")
 
@@ -27,9 +27,9 @@ start: default
 .PHONY: deps
 deps: default
 ifeq ($(LUAROCKS_VER),luarocks 3.)
-	luarocks install --lua-dir=$(LUAJIT_DIR) rockspec/resty-gateway-dev-0.rockspec --tree=deps --only-deps --local
+	luarocks install --lua-dir=$(LUAJIT_DIR) rockspec/my-cloud-gateway-dev-0.rockspec --tree=deps --only-deps --local
 else
-	luarocks install rockspec/apisix-master-0.rockspec --tree=deps --only-deps --local
+	luarocks install rockspec/my-cloud-gateway-dev-0.rockspec --tree=deps --only-deps --local
 endif
 
 ### test:			执行测试用例
