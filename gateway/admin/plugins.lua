@@ -14,33 +14,34 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-local uuid = require "resty.jit-uuid"
-local const = require("app.const")
-local log = require("app.core.log")
 local ngx = ngx
+local ctx = require("app.core.ctx")
+local core_table = require("app.core.table")
+local resp = require("app.core.response")
+local pairs = pairs
+
+local function list()
+    local plugins_list = {}
+    local plugins = ctx.plugins()
+    for _, p in pairs(plugins) do
+        if p.optional then
+            core_table.insert(plugins_list, {
+                name = p.name,
+                desc = p.desc .. "_" .. p.version
+            })
+        end
+    end
+    resp.exit(ngx.OK, plugins_list)
+end
 
 local _M = {
-    name = "tracing",
-    desc = "链路跟踪插件",
-    optional = true,
-    version = "v1.0"
+    apis = {
+        {
+            paths = {[[/admin/plugins/list]]},
+            methods = {"GET", "POST"},
+            handler = list
+        }
+    }
 }
-
-function _M.do_in_init()
-    -- automatic seeding with os.time(), LuaSocket, or ngx.time()
-    uuid.seed()
-    log.info("jit-uuid init")
-end
-
-function _M.do_in_access()
-    local req = ngx.req
-
-    local req_id = req.get_headers()[const.HEADER_TRACE_ID]
-    if not req_id then
-        local trace_id = uuid()
-        log.info("gen trace id: ", trace_id, " ", const.HEADER_TRACE_ID)
-        req.set_header(const.HEADER_TRACE_ID, trace_id)
-    end
-end
 
 return _M

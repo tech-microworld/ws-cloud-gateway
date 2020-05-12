@@ -14,33 +14,17 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-local uuid = require "resty.jit-uuid"
-local const = require("app.const")
-local log = require("app.core.log")
 local ngx = ngx
+local now = ngx.now
+local update_time = ngx.update_time
 
-local _M = {
-    name = "tracing",
-    desc = "链路跟踪插件",
-    optional = true,
-    version = "v1.0"
-}
 
-function _M.do_in_init()
-    -- automatic seeding with os.time(), LuaSocket, or ngx.time()
-    uuid.seed()
-    log.info("jit-uuid init")
+local _M = {}
+
+function _M.now()
+    update_time()
+    return now()
 end
 
-function _M.do_in_access()
-    local req = ngx.req
-
-    local req_id = req.get_headers()[const.HEADER_TRACE_ID]
-    if not req_id then
-        local trace_id = uuid()
-        log.info("gen trace id: ", trace_id, " ", const.HEADER_TRACE_ID)
-        req.set_header(const.HEADER_TRACE_ID, trace_id)
-    end
-end
 
 return _M

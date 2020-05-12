@@ -23,6 +23,8 @@ local etcd = require("app.core.etcd")
 local log = require("app.core.log")
 local tab_nkeys = require("table.nkeys")
 local str_utils = require("app.utils.str_utils")
+local core_table = require("app.core.table")
+local time = require("app.core.time")
 local routes_cache = ngx.shared.routes_cache
 
 local _M = {}
@@ -34,14 +36,21 @@ local function get_etcd_key(route_prefix)
     return str_utils.join_str("", etcd_prefix, route_prefix)
 end
 
--- 注册和更新路由配置
-local function apply_route(route_prefix, rotue_info)
-    routes_cache:safe_set(route_prefix, rotue_info)
-    log.alert("apply route: ", route_prefix, " => ", rotue_info)
+-- 路由配置是否存在
+local function is_exsit(route_prefix)
+    local key = get_etcd_key(route_prefix)
+    local res, err = etcd.get(key)
+    return not err and res.body.kvs and tab_nkeys(res.body.kvs) > 0
 end
 
+_M.is_exsit = is_exsit
+
 -- 注册和更新路由配置
-_M.apply_route = apply_route
+local function apply_route(route_prefix, route)
+    local route_info = cjson.encode(route)
+    routes_cache:safe_set(route_prefix, route_info)
+    log.alert("apply route: ", route_prefix, " => ", route_info)
+end
 
 -- 通过uri查询路由配置
 local function get_route_by_uri(uri)
@@ -74,15 +83,34 @@ local function query_routes()
     local routes = {}
     if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
         for _, node in ipairs(resp.body.kvs) do
-            local route = cjson.decode(node.value)
+            local route = node.value
             routes[route.prefix] = route
         end
         return routes, nil
     end
-    return nil, "empty"
+    return nil, "route is empty"
 end
 
 _M.query_routes = query_routes
+
+-- 查询所有路由配置，返回 list
+local function query_list()
+    local resp, err = etcd.readdir(etcd_prefix)
+    if err ~= nil then
+        log.error("failed to load routes", err)
+        return nil, err
+    end
+
+    local routes = {}
+    if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
+        for _, node in ipairs(resp.body.kvs) do
+            core_table.insert(routes, node.value)
+        end
+    end
+    return routes, nil
+end
+
+_M.query_list = query_list
 
 -- 删除缓存配置
 local function delete_route_cache(route_prefix)
@@ -104,14 +132,15 @@ _M.remove_route = remove_route
 
 -- 保存路由配置
 function _M.save_route(route_prefix, route)
+    route_prefix = str_utils.trim(route_prefix)
     local key = get_etcd_key(route_prefix)
-    local route_info = cjson.encode(route)
-    local _, err = etcd.set(key, route_info)
+    route.time = time.now() * 1000
+    local _, err = etcd.set(key, route)
     if err then
         return err
     end
     if route.status == 1 then
-        apply_route(route_prefix, route_info)
+        apply_route(route_prefix, route)
     else
         delete_route_cache(route_prefix)
     end
@@ -125,7 +154,7 @@ local function load_routes()
         return
     end
     for prefix, route in pairs(routes) do
-        apply_route(prefix, cjson.encode(route))
+        apply_route(prefix, route)
     end
 end
 

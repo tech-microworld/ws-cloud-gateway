@@ -26,7 +26,7 @@ no_long_string();
 no_root_location();
 
 my $app_home = cwd();
-my $config_file = "$app_home/$ENV{'config.file'}";
+my $config_file = "$app_home/$ENV{'gateway_config_file'}";
 
 add_block_preprocessor(sub {
     # my $block = shift;
@@ -45,7 +45,7 @@ add_block_preprocessor(sub {
         local config = require("app.config")
 
         -- 加载配置文件
-        config:init("$config_file")
+        config.init("$config_file")
 
         function check_res(data, err, say)
             if err then
@@ -68,7 +68,7 @@ _EOC_
     location = /app-name {
         content_by_lua_block {
             local config = require("app.config")
-            ngx.print(config:get("appName"))
+            ngx.print(config.get("appName"))
         }
     }
 _EOC_
