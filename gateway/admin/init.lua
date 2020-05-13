@@ -36,6 +36,8 @@ end
 
 local function handler_fun(fun)
     return function()
+        -- 从 body 中读取数据
+        ngx.req.read_body()
         check_token()
         fun()
     end
@@ -56,6 +58,7 @@ end
 
 function _M.init_worker()
     local resources = {
+        login = require("admin.login"),
         routes = require("admin.routes"),
         services = require("admin.services")
     }
@@ -70,7 +73,7 @@ end
 function _M.http_admin()
     local ok = router:dispatch(get_var("uri"), {method = get_method()})
     if not ok then
-        ngx_exit(404)
+        ngx_exit(404, "not dound")
     end
 end
 

@@ -10,5 +10,14 @@
         "discovery_plugin",
         "tracing_plugin",
         "rewrite_plugin"
-    ]
+    ],
+    "admin": {
+        "jwt_secret": "my-cloud-gateway-1024",
+        "account": {
+            "admin": {
+                "password": "admin",
+                "roles": ["admin"]
+            }
+        }
+    }
 }
