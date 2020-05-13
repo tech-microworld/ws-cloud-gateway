@@ -23,7 +23,7 @@ local error = error
 
 local _M = {version = 1.0}
 
-local etcd_config = config:get_etcd_config()
+local etcd_config = config.get_etcd_config()
 
 local function get_prefix()
     return etcd_config.data_prefix

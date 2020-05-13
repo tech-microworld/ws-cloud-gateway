@@ -29,7 +29,7 @@ local _M = {}
 local plugins = {}
 
 local function install_plugins()
-    local plugin_list = config:get("plugins")
+    local plugin_list = config.get("plugins")
     for _, file_name in pairs(plugin_list) do
         local ok, plugin = pcall(require, "app.plugins." .. file_name)
         if not ok then

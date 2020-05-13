@@ -20,11 +20,11 @@ local str_utils = require("app.utils.str_utils")
 local ngx_config = ngx.config
 local error = error
 
-local _M = {
-    _config = {}
-}
+local _M = {}
 
-function _M.init(self, config_file)
+local app_config = {}
+
+function _M.init(config_file)
     if not str_utils.start_with(config_file, "/") then
         config_file = ngx_config.prefix() .. config_file
     end
@@ -33,25 +33,27 @@ function _M.init(self, config_file)
     local confStr = confFile:read("*a")
     log.info("load cnfig: " .. confStr)
     confFile:close()
-    self._config = cjson.decode(confStr)
+    app_config = cjson.decode(confStr)
 end
 
-function _M.get(self, key)
-    return self._config[key]
-end
-
--- 获取etcd配置
-function _M.get_etcd_config(self)
-    if not self._config.etcd then
+local function get(key)
+    if not app_config then
         error("etcd config not init")
         return nil
     end
-    return self._config.etcd
+    return app_config[key]
+end
+
+_M.get = get
+
+-- 获取etcd配置
+function _M.get_etcd_config()
+    return get("etcd")
 end
 
 -- 是否是测试环境
-function _M.is_test(self)
-    return not self._config.env == "prod"
+function _M.is_test()
+    return not app_config.env == "prod"
 end
 
 return _M
