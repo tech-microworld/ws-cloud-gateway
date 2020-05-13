@@ -10,6 +10,11 @@ local log = require("app.core.log")
 local function login()
     local jwt_secret = config_get("admin").jwt_secret
     local account = config_get("admin").account
+    local body = ngx.req.get_body_data()
+    if not body then
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "用户名或密码为空")
+    end
+
     local data = cjson.decode(ngx.req.get_body_data())
 
     if not data or not data.username or not data.password then
