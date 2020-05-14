@@ -27,7 +27,6 @@ local radixtree = require("resty.radixtree")
 local resp = require("app.core.response")
 local jwt = require "resty.jwt"
 local config_get = require("app.config").get
-local cjson = require("cjson")
 
 local _M = {}
 

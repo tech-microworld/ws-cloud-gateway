@@ -23,6 +23,7 @@ local etcd = require("app.core.etcd")
 local log = require("app.core.log")
 local tab_nkeys = require("table.nkeys")
 local str_utils = require("app.utils.str_utils")
+local core_table = require("app.core.table")
 local routes_cache = ngx.shared.routes_cache
 
 local _M = {}
@@ -83,6 +84,26 @@ local function query_routes()
 end
 
 _M.query_routes = query_routes
+
+-- 查询所有路由配置，返回 list
+local function query_list()
+    local resp, err = etcd.readdir(etcd_prefix)
+    if err ~= nil then
+        log.error("failed to load routes", err)
+        return nil, err
+    end
+
+    local routes = {}
+    if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
+        for _, node in ipairs(resp.body.kvs) do
+            core_table.insert(routes, cjson.decode(node.value))
+        end
+    end
+    return routes, nil
+end
+
+_M.query_list = query_list
+
 
 -- 删除缓存配置
 local function delete_route_cache(route_prefix)

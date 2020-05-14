@@ -20,7 +20,7 @@ local resp = require("app.core.response")
 local route_store = require("app.store.route_store")
 
 local function list()
-    local route_list = route_store.query_routes()
+    local route_list = route_store.query_list()
     resp.exit(ngx.HTTP_OK, route_list)
 end
 
