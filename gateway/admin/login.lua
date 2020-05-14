@@ -5,7 +5,6 @@ local now = ngx.now
 local update_time = ngx.update_time
 local config_get = require("app.config").get
 local resp = require("app.core.response")
-local log = require("app.core.log")
 
 local function login()
     local jwt_secret = config_get("admin").jwt_secret
@@ -27,8 +26,7 @@ local function login()
     end
 
     update_time()
-    local token = jwt:sign(
-        jwt_secret,
+    local token = jwt:sign(jwt_secret,
         {
             header = {typ = "JWT", alg = "HS256"},
             payload = {
@@ -40,12 +38,31 @@ local function login()
     resp.exit(ngx.OK, {token = token})
 end
 
+local function info()
+    resp.exit(ngx.OK, ngx.ctx.admin_login_user)
+end
+
+local function logout()
+    resp.exit(ngx.OK, "ok")
+end
+
 local _M = {
     apis = {
         {
             paths = {[[/admin/login]]},
             methods = {"POST"},
-            handler = login
+            handler = login,
+            check_login = false
+        },
+        {
+            paths = {[[/admin/user/info]]},
+            methods = {"POST", "GET"},
+            handler = info
+        },
+        {
+            paths = {[[/admin/logout]]},
+            methods = {"POST", "GET"},
+            handler = logout
         }
     }
 }
