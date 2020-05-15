@@ -20,7 +20,8 @@ local ngx = ngx
 local _M = {
     name = "rewrite",
     desc = "url重写插件",
-    version = 1.0
+    optional = true,
+    version = "v1.0"
 }
 
 function _M.do_in_rewrite(route)

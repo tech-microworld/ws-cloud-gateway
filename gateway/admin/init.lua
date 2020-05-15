@@ -111,7 +111,8 @@ function _M.init_worker()
     local resources = {
         login = require("admin.login"),
         routes = require("admin.routes"),
-        services = require("admin.services")
+        services = require("admin.services"),
+        plugins = require("admin.plugins")
     }
 
     for _, res in pairs(resources) do

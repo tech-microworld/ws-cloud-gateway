@@ -16,11 +16,14 @@
 --
 
 local ngx = ngx
+local resp = require("app.core.response")
 
+-- optional 是否可选
 local _M = {
     name = "default",
     desc = "默认插件",
-    version = 1.0
+    optional = false,
+    version = "v1.0"
 }
 
 function _M.do_in_init()
@@ -39,8 +42,7 @@ function _M.do_in_access()
 end
 
 function _M.do_in_content()
-    ngx.say("not found")
-    ngx.exit(404)
+    resp.exit(ngx.HTTP_NOT_FOUND, "not found")
 end
 
 function _M.do_in_balancer()

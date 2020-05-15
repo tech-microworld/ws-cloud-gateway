@@ -25,7 +25,8 @@ local ngx = ngx
 local _M = {
     name = "discovery",
     desc = "服务发现插件",
-    version = 1.0
+    optional = true,
+    version = "v1.0"
 }
 
 function _M.do_in_init_worker()
