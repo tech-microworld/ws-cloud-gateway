@@ -35,14 +35,20 @@ local function get_etcd_key(route_prefix)
     return str_utils.join_str("", etcd_prefix, route_prefix)
 end
 
+-- 路由配置是否存在
+local function is_exsit(route_prefix)
+    local key = get_etcd_key(route_prefix)
+    local res, err = etcd.get(key)
+    return not err and res.body.kvs and tab_nkeys(res.body.kvs) > 0
+end
+
+_M.is_exsit = is_exsit
+
 -- 注册和更新路由配置
 local function apply_route(route_prefix, rotue_info)
     routes_cache:safe_set(route_prefix, rotue_info)
     log.alert("apply route: ", route_prefix, " => ", rotue_info)
 end
-
--- 注册和更新路由配置
-_M.apply_route = apply_route
 
 -- 通过uri查询路由配置
 local function get_route_by_uri(uri)
@@ -104,7 +110,6 @@ end
 
 _M.query_list = query_list
 
-
 -- 删除缓存配置
 local function delete_route_cache(route_prefix)
     routes_cache:delete(route_prefix)
@@ -125,6 +130,7 @@ _M.remove_route = remove_route
 
 -- 保存路由配置
 function _M.save_route(route_prefix, route)
+    route_prefix = str_utils.trim(route_prefix)
     local key = get_etcd_key(route_prefix)
     local route_info = cjson.encode(route)
     local _, err = etcd.set(key, route_info)

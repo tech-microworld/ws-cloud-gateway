@@ -14,14 +14,58 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
+local cjson = require("cjson")
 local ngx = ngx
 local resp = require("app.core.response")
-
 local route_store = require("app.store.route_store")
+local str_utils = require("app.utils.str_utils")
+
 
 local function list()
     local route_list = route_store.query_list()
     resp.exit(ngx.HTTP_OK, route_list)
+end
+
+-- 应用路由配置
+local function apply()
+    local body = ngx.req.get_body_data()
+    if not body then
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "参数不能为空")
+    end
+    local data = cjson.decode(ngx.req.get_body_data())
+    local old_prefix = data.old_prefix
+    local route_data = data.route
+
+    -- 检查路由是否已经存在
+    if str_utils.is_blank(old_prefix) and route_store.is_exsit(route_data.prefix) then
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "路由[" .. route_data.prefix .. "]配置已存在，请检查!")
+        return
+    end
+
+    local err = route_store.save_route(route_data.prefix, route_data)
+    -- 如果路由前缀修改了，需要删除之前的路由配置
+    if not err and old_prefix and old_prefix ~= route_data.prefix then
+        err = route_store.remove_route(old_prefix)
+    end
+    if err then
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "路由配置保存失败，请重试")
+        return
+    end
+    resp.exit(ngx.HTTP_OK, "ok")
+end
+
+-- 删除路由
+local function remove()
+    local body = ngx.req.get_body_data()
+    if not body then
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "参数不能为空")
+    end
+    local data = cjson.decode(ngx.req.get_body_data())
+    local err = route_store.remove_route(data.prefix)
+    if err then
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "路由配置保存失败，请重试")
+    end
+    resp.exit(ngx.HTTP_OK, "ok")
 end
 
 local _M = {
@@ -30,6 +74,16 @@ local _M = {
             paths = {[[/admin/routes/list]]},
             methods = {"GET", "POST"},
             handler = list
+        },
+        {
+            paths = {[[/admin/routes/apply]]},
+            methods = {"GET", "POST"},
+            handler = apply
+        },
+        {
+            paths = {[[/admin/routes/remove]]},
+            methods = {"POST"},
+            handler = remove
         }
     }
 }
