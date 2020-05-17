@@ -1,4 +1,4 @@
-export gateway_config_file=conf/app.json
+export gateway_config_file=conf/app-dev.json
 OR_EXEC ?= $(shell which openresty)
 LUAROCKS_VER ?= $(shell luarocks --version | grep -E -o  "luarocks [0-9]+.")
 

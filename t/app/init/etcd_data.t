@@ -87,6 +87,7 @@ location = /t {
             local log = require("app.core.log")
             local etcd = require("app.core.etcd")
             local str_utils = require("app.utils.str_utils")
+            local time = require("app.core.time")
 
             local etcd_prefix = "discovery/"
             ngx.req.read_body()
@@ -95,7 +96,12 @@ location = /t {
             for _, node in ipairs(nodes) do
                 local key = str_utils.join_str("/", etcd_prefix, node.service_name, node.host)
                 log.info("discovery ======> ", key)
-                etcd.set(key, node.weight)
+                local payload = {
+                    weight = node.weight,
+                    status = node.status,
+                    time = time.now() * 1000
+                }
+                etcd.set(key, cjson.encode(payload))
             end
 
             check_res("ok", nil, true)
@@ -108,22 +114,26 @@ POST /t
     {
         "service_name": "demo1",
         "host": "127.0.0.1:1024",
-        "weight": 1
+        "weight": 1,
+        "status": 1
     },
     {
         "service_name": "demo1",
         "host": "127.0.0.1:1025",
-        "weight": 1
+        "weight": 1,
+        "status": 1
     },
     {
         "service_name": "demo2",
         "host": "127.0.0.1:1026",
-        "weight": 1
+        "weight": 1,
+        "status": 1
     },
     {
         "service_name": "demo2",
         "host": "127.0.0.1:1027",
-        "weight": 1
+        "weight": 1,
+        "status": 1
     }
 ]
 

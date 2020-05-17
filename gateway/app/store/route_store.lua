@@ -24,6 +24,7 @@ local log = require("app.core.log")
 local tab_nkeys = require("table.nkeys")
 local str_utils = require("app.utils.str_utils")
 local core_table = require("app.core.table")
+local time = require("app.core.time")
 local routes_cache = ngx.shared.routes_cache
 
 local _M = {}
@@ -132,6 +133,7 @@ _M.remove_route = remove_route
 function _M.save_route(route_prefix, route)
     route_prefix = str_utils.trim(route_prefix)
     local key = get_etcd_key(route_prefix)
+    route.time = time.now() * 1000
     local route_info = cjson.encode(route)
     local _, err = etcd.set(key, route_info)
     if err then

@@ -40,16 +40,41 @@ local function full_etcd_prefix()
     return str_utils.join_str("", etcd.get_prefix(), etcd_prefix)
 end
 
--- 查询所有服务节点信息
-local get_all_service_nodes = function()
-    local service_nodes = {}
-    for _, name in ipairs(service_cache:get_keys()) do
-        service_nodes[name] = service_cache:get(name)
-    end
-    return service_nodes
+local function parse_node(etcd_kv)
+    local node = str_utils.str_sub(etcd_kv.key, #full_etcd_prefix() + 1)
+    local arr = str_utils.split(node, "/")
+    local service_name = arr[1]
+    local service_upstream = arr[2]
+    local payload = cjson.decode(etcd_kv.value)
+    return {
+        service_name = service_name,
+        upstream = service_upstream,
+        weight = payload.weight,
+        status = payload.status,
+        time = payload.time
+    }
 end
 
-_M.get_all_service_nodes = get_all_service_nodes
+-- 从 etcd 读取所有服务节点
+local function service_list()
+    local resp, err = etcd.readdir(etcd_prefix)
+    if err then
+        log.info("failed to query service list", err)
+        return nil, err
+    end
+
+    local services = {}
+    etcd_watch_opts.start_revision = resp.body.header.revision + 1
+    if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
+        for _, kv in ipairs(resp.body.kvs) do
+            local node = parse_node(kv)
+            services[node.service_name] = node
+        end
+    end
+    return services, nil
+end
+
+_M.service_list = service_list
 
 -- 根据服务名查询节点列表
 local function get_service_nodes(service_name)
@@ -63,7 +88,7 @@ end
 _M.get_service_nodes = get_service_nodes
 
 -- 更新服务节点信息
-local function put_service_node(node_data, is_remove)
+local function put_service_node(service)
     if is_remove == nil then
         is_remove = false
     end
@@ -112,7 +137,6 @@ local function watch_services()
         if chunk.result.events then
             for _, event in ipairs(chunk.result.events) do
                 put_service_node(event.kv, delete_type == event.type)
-                get_all_service_nodes()
             end
         end
     end
@@ -124,15 +148,15 @@ local function load_services()
         log.debug("worker id is not 0 and do nothing")
         return
     end
-    local resp, err = etcd.readdir(etcd_prefix)
+
+    local services, err = service_list()
     if err then
         log.info("failed to load services", err)
         return
     end
 
-    etcd_watch_opts.start_revision = resp.body.header.revision + 1
-    if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
-        for _, kv in ipairs(resp.body.kvs) do
+    if services and tab_nkeys(services) > 0 then
+        for _, kv in ipairs(services) do
             put_service_node(kv)
         end
     else

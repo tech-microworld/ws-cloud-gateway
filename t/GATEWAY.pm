@@ -26,7 +26,7 @@ no_long_string();
 no_root_location();
 
 my $app_home = cwd();
-my $config_file = "$app_home/$ENV{'config.file'}";
+my $config_file = "$app_home/$ENV{'gateway_config_file'}";
 
 add_block_preprocessor(sub {
     # my $block = shift;
@@ -34,7 +34,7 @@ add_block_preprocessor(sub {
 
     my $main_config = $block->main_config // <<_EOC_;
 
-    env config.file=${config_file};
+    env gateway_config_file=${config_file};
 
 _EOC_
 
