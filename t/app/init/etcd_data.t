@@ -101,7 +101,7 @@ location = /t {
                     status = node.status,
                     time = time.now() * 1000
                 }
-                etcd.set(key, cjson.encode(payload))
+                etcd.set(key, payload)
             end
 
             check_res("ok", nil, true)

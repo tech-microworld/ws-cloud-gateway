@@ -46,9 +46,10 @@ end
 _M.is_exsit = is_exsit
 
 -- 注册和更新路由配置
-local function apply_route(route_prefix, rotue_info)
-    routes_cache:safe_set(route_prefix, rotue_info)
-    log.alert("apply route: ", route_prefix, " => ", rotue_info)
+local function apply_route(route_prefix, route)
+    local route_info = cjson.encode(route)
+    routes_cache:safe_set(route_prefix, route_info)
+    log.alert("apply route: ", route_prefix, " => ", route_info)
 end
 
 -- 通过uri查询路由配置
@@ -82,7 +83,7 @@ local function query_routes()
     local routes = {}
     if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
         for _, node in ipairs(resp.body.kvs) do
-            local route = cjson.decode(node.value)
+            local route = node.value
             routes[route.prefix] = route
         end
         return routes, nil
@@ -103,7 +104,7 @@ local function query_list()
     local routes = {}
     if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
         for _, node in ipairs(resp.body.kvs) do
-            core_table.insert(routes, cjson.decode(node.value))
+            core_table.insert(routes, node.value)
         end
     end
     return routes, nil
@@ -134,13 +135,12 @@ function _M.save_route(route_prefix, route)
     route_prefix = str_utils.trim(route_prefix)
     local key = get_etcd_key(route_prefix)
     route.time = time.now() * 1000
-    local route_info = cjson.encode(route)
-    local _, err = etcd.set(key, route_info)
+    local _, err = etcd.set(key, route)
     if err then
         return err
     end
     if route.status == 1 then
-        apply_route(route_prefix, route_info)
+        apply_route(route_prefix, route)
     else
         delete_route_cache(route_prefix)
     end
