@@ -154,7 +154,7 @@ local function load_routes()
         return
     end
     for prefix, route in pairs(routes) do
-        apply_route(prefix, cjson.encode(route))
+        apply_route(prefix, route)
     end
 end
 
