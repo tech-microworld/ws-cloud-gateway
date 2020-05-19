@@ -35,23 +35,27 @@ function _M.do_in_init_worker()
 end
 
 function _M.do_in_rewrite()
-    -- body
-end
-
-function _M.do_in_access()
-end
-
-function _M.do_in_content()
     resp.exit(ngx.HTTP_NOT_FOUND, "not found")
 end
 
+function _M.do_in_access()
+    -- body
+end
+
+function _M.do_in_content()
+    -- body
+end
+
 function _M.do_in_balancer()
+    -- body
 end
 
 function _M.do_in_body_filter()
+    -- body
 end
 
 function _M.do_in_log()
+    -- body
 end
 
 return _M
