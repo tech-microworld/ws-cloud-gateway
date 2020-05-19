@@ -14,7 +14,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-
+local ngx = ngx
 local ctx = require("app.core.ctx")
 local core_table = require("app.core.table")
 local resp = require("app.core.response")

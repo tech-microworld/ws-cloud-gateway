@@ -14,6 +14,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
+local require = require
 local get_var = require("resty.ngxvar").fetch
 local ngx = ngx
 local get_method = ngx.req.get_method
