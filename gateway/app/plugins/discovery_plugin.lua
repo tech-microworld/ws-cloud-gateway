@@ -16,6 +16,7 @@
 --
 local log = require("app.core.log")
 local route_store = require("app.store.route_store")
+local tab_nkeys = require("table.nkeys")
 local discovery_stroe = require("app.store.discovery_stroe")
 local balancer = require "ngx.balancer"
 local resty_roundrobin = require "resty.roundrobin"
@@ -37,14 +38,13 @@ end
 function _M.do_in_rewrite(route)
     local ngx_ctx = ngx.ctx
     local var = ngx.var
-
     local service_name = route.service_name
     var.target_service_name = service_name
 
-    local service_nodes = discovery_stroe.get_service_nodes(service_name)
+    local service_nodes = discovery_stroe.get_service_nodes_cache(service_name)
     local node_not_found_resp = route.props.discovery_node_not_found_resp or "no server node start"
 
-    if not service_nodes then
+    if not service_nodes or tab_nkeys(service_nodes) < 1 then
         log.error("no server node start, uri: ", var.uri)
         ngx.say(node_not_found_resp)
         ngx.exit(500)

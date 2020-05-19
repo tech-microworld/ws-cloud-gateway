@@ -15,8 +15,10 @@
 -- limitations under the License.
 --
 local ngx = ngx
+local cjson = require("cjson")
 local resp = require("app.core.response")
 local log = require("app.core.log")
+local time = require("app.core.time")
 local discovery_stroe = require("app.store.discovery_stroe")
 
 local function list()
@@ -29,12 +31,44 @@ local function list()
     resp.exit(ngx.HTTP_OK, services)
 end
 
+local function remove()
+    local _, err = discovery_stroe.service_node_list()
+    if err then
+        log.error("delete service node error: ", err)
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "删除服务节点异常")
+        return
+    end
+    resp.exit(ngx.HTTP_OK, "ok")
+end
+
+local function save()
+    local service = cjson.decode(ngx.req.get_body_data())
+    service.time = time.now() * 1000
+    local _, err = discovery_stroe.save_service_node(service)
+    if err then
+        log.error("save service node error: ", err)
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "保存服务节点异常")
+        return
+    end
+    resp.exit(ngx.HTTP_OK, "ok")
+end
+
 local _M = {
     apis = {
         {
             paths = {[[/admin/services/list]]},
             methods = {"GET", "POST"},
             handler = list
+        },
+        {
+            paths = {[[/admin/services/remove]]},
+            methods = {"GET", "POST"},
+            handler = remove
+        },
+        {
+            paths = {[[/admin/services/save]]},
+            methods = {"POST"},
+            handler = save
         }
     }
 }
