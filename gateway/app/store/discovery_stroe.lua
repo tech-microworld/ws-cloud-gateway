@@ -21,7 +21,6 @@ local time = require("app.core.time")
 local ngx = ngx
 local timer_at = ngx.timer.at
 local ipairs = ipairs
-local str_utils = require("app.utils.str_utils")
 local etcd = require("app.core.etcd")
 local core_table = require("app.core.table")
 local service_cache = ngx.shared.discovery_cache
@@ -37,30 +36,34 @@ local etcd_watch_opts = {
     start_revision = nil
 }
 
--- etcd key 前缀
-local function full_etcd_prefix()
-    return str_utils.join_str("", etcd.get_prefix(), etcd_prefix)
-end
-
 -- 根据服务名和 upstream 获取 etcd key
-local function service_node_etcd_key(service_name, upstream)
-    return str_utils.join_str("/", etcd_prefix, service_name, upstream)
+local function service_node_etcd_key(key)
+    return etcd_prefix .. key
 end
 
-local function parse_node(etcd_kv)
-    local node = str_utils.str_sub(etcd_kv.key, #full_etcd_prefix() + 2)
-    local arr = str_utils.split(node, "/")
-    local service_name = arr[1]
-    local service_upstream = arr[2]
-    local payload = etcd_kv.value
+local function get_key(service_name, upstream)
+    return "/" .. service_name .. "/" .. upstream
+end
+
+local function parse_node(service)
     return {
-        service_name = service_name,
-        upstream = service_upstream,
-        weight = payload.weight,
-        status = payload.status,
-        time = payload.time
+        key = get_key(service.service_name, service.upstream),
+        service_name = service.service_name,
+        upstream = service.upstream,
+        weight = service.weight,
+        status = service.status,
+        time = service.time or time.now() * 1000
     }
 end
+
+-- 服务节点是否存在
+local function is_exsit(service)
+    local key = get_key(service.service_name, service.upstream)
+    local res, err = etcd.get(service_node_etcd_key(key))
+    return not err and res.body.kvs and tab_nkeys(res.body.kvs) > 0
+end
+
+_M.is_exsit = is_exsit
 
 -- 从 etcd 读取所有服务节点
 local function service_node_list()
@@ -74,7 +77,7 @@ local function service_node_list()
     etcd_watch_opts.start_revision = resp.body.header.revision + 1
     if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
         for _, kv in ipairs(resp.body.kvs) do
-            core_table.insert(nodes, parse_node(kv))
+            core_table.insert(nodes, parse_node(kv.value))
         end
     end
     return nodes, nil
@@ -121,27 +124,38 @@ local function apply_service_node(node)
     service_cache:set(service_name, cjson.encode(nodes))
 end
 
+-- 从 etcd 删除服务节点
+local function delete_etcd_node(key)
+    local _, err = etcd.delete(service_node_etcd_key(key))
+    return err
+end
+
+_M.delete_etcd_node = delete_etcd_node
+
 -- 保存服务节点到 etcd
 local function save_service_node(service)
-    local payload = {
-        weight = service.weight,
-        status = service.status,
-        time = time.now() * 1000
-    }
-    local _, err = etcd.set(service_node_etcd_key(service.service_name, service.upstream), payload)
+    local old_key = service.key
+    local payload = parse_node(service)
+    local _, err
+    -- key 不相同，则是更新节点，需要删除旧节点
+    if old_key and old_key ~= payload.key then
+        _, err = delete_etcd_node(old_key)
+    end
+    if err then
+        log.error("delete service node error: ", err, " - ", payload.key)
+        return err
+    end
+    _, err = etcd.set(service_node_etcd_key(payload.key), payload)
     if err then
         log.error("save service node error: ", err, " - ", cjson.encode(service))
-        return
+        return err
     end
     apply_service_node(service)
+    return nil
 end
 
 _M.save_service_node = save_service_node
 
--- 从 etcd 删除服务节点
-function _M.delete_etcd_node(service_name, upstream)
-    return etcd.delete(service_node_etcd_key(service_name, upstream))
-end
 
 -- 监听服务节点数据变更
 local function watch_services()
@@ -173,11 +187,11 @@ local function watch_services()
         etcd_watch_opts.start_revision = chunk.result.header.revision + 1
         if chunk.result.events then
             for _, event in ipairs(chunk.result.events) do
-                local node = parse_node(event.kv)
+                local node = parse_node(event.kv.value)
                 if delete_type == event.type then
                     remove_node_cache(node.service_name, node.upstream)
                 else
-                    apply_service_node(parse_node(event.kv))
+                    apply_service_node(node)
                 end
             end
         end

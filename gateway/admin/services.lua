@@ -18,6 +18,7 @@ local ngx = ngx
 local cjson = require("cjson")
 local resp = require("app.core.response")
 local log = require("app.core.log")
+local str_utils = require("app.utils.str_utils")
 local time = require("app.core.time")
 local discovery_stroe = require("app.store.discovery_stroe")
 
@@ -32,7 +33,8 @@ local function list()
 end
 
 local function remove()
-    local _, err = discovery_stroe.service_node_list()
+    local data = cjson.decode(ngx.req.get_body_data())
+    local _, err = discovery_stroe.delete_etcd_node(data.key)
     if err then
         log.error("delete service node error: ", err)
         resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "删除服务节点异常")
@@ -44,10 +46,14 @@ end
 local function save()
     local service = cjson.decode(ngx.req.get_body_data())
     service.time = time.now() * 1000
+    if str_utils.is_blank(service.key) and discovery_stroe.is_exsit(service) then
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "服务节点已存在")
+        return
+    end
     local _, err = discovery_stroe.save_service_node(service)
     if err then
         log.error("save service node error: ", err)
-        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "保存服务节点异常")
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, err)
         return
     end
     resp.exit(ngx.HTTP_OK, "ok")
