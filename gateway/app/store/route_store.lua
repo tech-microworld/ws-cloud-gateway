@@ -154,8 +154,8 @@ local function load_routes()
         log.error("load routes fail: ", err)
         return
     end
-    for prefix, route in pairs(routes) do
-        apply_route(prefix, route)
+    for _, route in pairs(routes) do
+        apply_route(route)
     end
 end
 
