@@ -23,12 +23,12 @@ function _M.call(modules, method_name, ...)
     for name, m in pairs(modules) do
         local func = m[method_name]
         if not func then
-            log.info("can not found module method, ", name, ".", method_name)
+            log.debug("can not found module method, ", name, ".", method_name)
             goto CONTINUE
         end
         local ok, err = pcall(func, ...)
         if not ok then
-            log.info("call error:", method_name, " - ", err)
+            log.error("call error:", method_name, " - ", err)
         end
 
         ::CONTINUE::
