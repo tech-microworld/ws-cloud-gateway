@@ -27,25 +27,23 @@ local function list()
 end
 
 -- 应用路由配置
-local function apply()
+local function save()
     local body = ngx.req.get_body_data()
     if not body then
         resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "参数不能为空")
     end
-    local data = cjson.decode(ngx.req.get_body_data())
-    local old_prefix = data.old_prefix
-    local route_data = data.route
-
+    local route = cjson.decode(ngx.req.get_body_data())
+    local key = route.key
     -- 检查路由是否已经存在
-    if str_utils.is_blank(old_prefix) and route_store.is_exsit(route_data.prefix) then
-        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "路由[" .. route_data.prefix .. "]配置已存在，请检查!")
+    if str_utils.is_blank(key) and route_store.is_exsit(route.prefix) then
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "路由[" .. route.prefix .. "]配置已存在，请检查!")
         return
     end
 
-    local err = route_store.save_route(route_data.prefix, route_data)
+    local err = route_store.save_route(route)
     -- 如果路由前缀修改了，需要删除之前的路由配置
-    if not err and old_prefix and old_prefix ~= route_data.prefix then
-        err = route_store.remove_route(old_prefix)
+    if not err and key and key ~= route.prefix then
+        err = route_store.remove_route(key)
     end
     if err then
         resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "路由配置保存失败，请重试")
@@ -76,9 +74,9 @@ local _M = {
             handler = list
         },
         {
-            paths = {[[/admin/routes/apply]]},
+            paths = {[[/admin/routes/save]]},
             methods = {"GET", "POST"},
-            handler = apply
+            handler = save
         },
         {
             paths = {[[/admin/routes/remove]]},

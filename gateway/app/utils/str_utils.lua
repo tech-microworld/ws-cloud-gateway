@@ -40,8 +40,11 @@ end
 _M.is_empty = is_empty
 
 local function is_blank(str)
+    if str == nil then
+        return true
+    end
     local b = trim(str)
-    return not b or b == ""
+    return b == ""
 end
 
 _M.is_blank = is_blank

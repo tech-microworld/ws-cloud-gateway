@@ -32,13 +32,13 @@ local _M = {}
 local etcd_prefix = "routes"
 
 -- 构造路由前缀
-local function get_etcd_key(route_prefix)
-    return str_utils.join_str("", etcd_prefix, route_prefix)
+local function get_etcd_key(key)
+    return str_utils.join_str("", etcd_prefix, key)
 end
 
 -- 路由配置是否存在
-local function is_exsit(route_prefix)
-    local key = get_etcd_key(route_prefix)
+local function is_exsit(key)
+    local key = get_etcd_key(key)
     local res, err = etcd.get(key)
     return not err and res.body.kvs and tab_nkeys(res.body.kvs) > 0
 end
@@ -46,10 +46,10 @@ end
 _M.is_exsit = is_exsit
 
 -- 注册和更新路由配置
-local function apply_route(route_prefix, route)
+local function apply_route(route)
     local route_info = cjson.encode(route)
-    routes_cache:safe_set(route_prefix, route_info)
-    log.alert("apply route: ", route_prefix, " => ", route_info)
+    routes_cache:safe_set(route.key, route_info)
+    log.alert("apply route: ", route.key, " => ", route_info)
 end
 
 -- 通过uri查询路由配置
@@ -103,8 +103,8 @@ local function query_list()
 
     local routes = {}
     if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
-        for _, node in ipairs(resp.body.kvs) do
-            core_table.insert(routes, node.value)
+        for _, kv in ipairs(resp.body.kvs) do
+            core_table.insert(routes, kv.value)
         end
     end
     return routes, nil
@@ -118,12 +118,12 @@ local function delete_route_cache(route_prefix)
 end
 
 -- 删除路由
-local function remove_route(route_prefix)
-    log.alert("remove route: ", route_prefix)
-    local key = get_etcd_key(route_prefix)
-    local _, err = etcd.delete(key)
+local function remove_route(key)
+    log.alert("remove route: ", key)
+    local etcd_key = get_etcd_key(key)
+    local _, err = etcd.delete(etcd_key)
     if not err then
-        delete_route_cache(route_prefix)
+        delete_route_cache(key)
     end
     return err
 end
@@ -131,18 +131,19 @@ end
 _M.remove_route = remove_route
 
 -- 保存路由配置
-function _M.save_route(route_prefix, route)
-    route_prefix = str_utils.trim(route_prefix)
-    local key = get_etcd_key(route_prefix)
+function _M.save_route(route)
+    route.key = route.prefix
+    local key = str_utils.trim(route.key)
+    local etcd_key = get_etcd_key(key)
     route.time = time.now() * 1000
-    local _, err = etcd.set(key, route)
+    local _, err = etcd.set(etcd_key, route)
     if err then
         return err
     end
     if route.status == 1 then
-        apply_route(route_prefix, route)
+        apply_route(route)
     else
-        delete_route_cache(route_prefix)
+        delete_route_cache(key)
     end
     return nil
 end

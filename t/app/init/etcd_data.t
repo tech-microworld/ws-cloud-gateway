@@ -31,7 +31,7 @@ location = /t {
         ngx.req.read_body()
         local data = ngx.req.get_body_data()
         local route = cjson.decode(data)
-        local err = route_store.save_route(route.prefix, route)
+        local err = route_store.save_route(route)
         check_res("ok", err, true)
     }
 }
@@ -57,6 +57,23 @@ location = /t {
     ',
     'POST /t
     {
+        "prefix": "/innerapi/demo1",
+        "status": 1,
+        "service_name": "demo1",
+        "protocol": "http",
+        "plugins": [
+            "discovery",
+            "tracing",
+            "rewrite"
+        ],
+        "props": {
+            "rewrite_url_regex" : "^/innerapi/(.*)/",
+            "rewrite_replace" : "/"
+        }
+    }
+    ',
+    'POST /t
+    {
         "prefix": "/openapi/demo2",
         "status": 1,
         "service_name": "demo2",
@@ -74,6 +91,7 @@ location = /t {
 
 --- response_body eval
 [
+    "ok\n",
     "ok\n",
     "ok\n"
 ]
