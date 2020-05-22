@@ -38,7 +38,7 @@ function _M.do_in_access()
     local req_id = req.get_headers()[const.HEADER_TRACE_ID]
     if not req_id then
         local trace_id = uuid()
-        log.info("gen trace id: ", trace_id, " ", const.HEADER_TRACE_ID)
+        log.debug("gen trace id: ", trace_id, " ", const.HEADER_TRACE_ID)
         req.set_header(const.HEADER_TRACE_ID, trace_id)
     end
 end
