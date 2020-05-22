@@ -35,7 +35,7 @@ add_block_preprocessor(sub {
     my $http_config = $block->http_config // <<_EOC_;
 
     # 全局缓存定义
-    lua_shared_dict service_cache 10m;
+    lua_shared_dict discovery_cache 10m;
     lua_shared_dict routes_cache 10m;
 
     lua_package_path "$app_home/deps/share/lua/5.1/?.lua;$app_home/deps/share/lua/5.1/?/init.lua;$app_home/gateway/?.lua;$app_home/t/?.lua;;";

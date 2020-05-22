@@ -83,7 +83,8 @@ location = /t {
             "tracing"
         ],
         "props": {
-            "aa": 1
+            "rewrite_url_regex" : "^/innerapi/(.*)/",
+            "rewrite_replace" : "/"
         }
     }
     '
@@ -97,29 +98,19 @@ location = /t {
 ]
 
 
-=== TEST 1: init “discovery
+=== TEST 2: init discovery
 --- config
     location = /t {
         content_by_lua_block {
             local cjson = require "cjson"
             local log = require("app.core.log")
-            local etcd = require("app.core.etcd")
-            local str_utils = require("app.utils.str_utils")
-            local time = require("app.core.time")
+            local discovery_stroe = require("app.store.discovery_stroe")
 
-            local etcd_prefix = "discovery/"
             ngx.req.read_body()
             local nodes = cjson.decode(ngx.req.get_body_data())
-            log.info("nodes len: ", #nodes)
             for _, node in ipairs(nodes) do
-                local key = str_utils.join_str("/", etcd_prefix, node.service_name, node.host)
-                log.info("discovery ======> ", key)
-                local payload = {
-                    weight = node.weight,
-                    status = node.status,
-                    time = time.now() * 1000
-                }
-                etcd.set(key, payload)
+                log.error("save node: ", cjson.encode(node))
+                discovery_stroe.save_service_node(node)
             end
 
             check_res("ok", nil, true)
@@ -131,25 +122,25 @@ POST /t
 [
     {
         "service_name": "demo1",
-        "host": "127.0.0.1:1024",
+        "upstream": "127.0.0.1:1024",
         "weight": 1,
         "status": 1
     },
     {
         "service_name": "demo1",
-        "host": "127.0.0.1:1025",
+        "upstream": "127.0.0.1:1025",
         "weight": 1,
         "status": 1
     },
     {
         "service_name": "demo2",
-        "host": "127.0.0.1:1026",
+        "upstream": "127.0.0.1:1026",
         "weight": 1,
         "status": 1
     },
     {
         "service_name": "demo2",
-        "host": "127.0.0.1:1027",
+        "upstream": "127.0.0.1:1027",
         "weight": 1,
         "status": 1
     }
