@@ -1,0 +1,3 @@
+[submodule "my-cloud-admin"]
+	path = my-cloud-admin
+	url = git@github.com:tech-microworld/my-cloud-admin.git

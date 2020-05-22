@@ -20,7 +20,8 @@ local ngx = ngx
 local _M = {
     name = "rewrite",
     desc = "url重写插件",
-    version = 1.0
+    optional = true,
+    version = "v1.0"
 }
 
 function _M.do_in_rewrite(route)
@@ -36,7 +37,7 @@ function _M.do_in_rewrite(route)
 
     local rewrite_replace = route.props.rewrite_replace
     if not rewrite_url_regex then
-        log.info("rewrite props[replace_regex] not set")
+        log.info("rewrite props[rewrite_replace] not set")
         return
     end
 

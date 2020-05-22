@@ -23,13 +23,14 @@ local pairs = pairs
 local ngx = ngx
 local route_store = require("app.store.route_store")
 local config = require("app.config")
+local tab_nkeys = require("table.nkeys")
 
 local _M = {}
 
 local plugins = {}
 
 local function install_plugins()
-    local plugin_list = config:get("plugins")
+    local plugin_list = config.get("plugins")
     for _, file_name in pairs(plugin_list) do
         local ok, plugin = pcall(require, "app.plugins." .. file_name)
         if not ok then
@@ -71,6 +72,10 @@ function _M.get_dispatcher()
                     "default"
                 }
             }
+        end
+
+        if not route or tab_nkeys(route.plugins) == 0 then
+            route.plugins = {"default"}
         end
 
         local dispatcher_plugins = {}

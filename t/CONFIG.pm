@@ -26,7 +26,7 @@ no_long_string();
 no_root_location();
 
 my $app_home = cwd();
-my $config_file = "$app_home/$ENV{'config.file'}";
+my $config_file = "$app_home/$ENV{'gateway_config_file'}";
 
 add_block_preprocessor(sub {
     # my $block = shift;
@@ -35,7 +35,7 @@ add_block_preprocessor(sub {
     my $http_config = $block->http_config // <<_EOC_;
 
     # 全局缓存定义
-    lua_shared_dict service_cache 10m;
+    lua_shared_dict discovery_cache 10m;
     lua_shared_dict routes_cache 10m;
 
     lua_package_path "$app_home/deps/share/lua/5.1/?.lua;$app_home/deps/share/lua/5.1/?/init.lua;$app_home/gateway/?.lua;$app_home/t/?.lua;;";
@@ -45,7 +45,7 @@ add_block_preprocessor(sub {
         local config = require("app.config")
 
         -- 加载配置文件
-        config:init("$config_file")
+        config.init("$config_file")
 
         function check_res(data, err, say)
             if err then
@@ -68,7 +68,7 @@ _EOC_
     location = /app-name {
         content_by_lua_block {
             local config = require("app.config")
-            ngx.print(config:get("appName"))
+            ngx.print(config.get("appName"))
         }
     }
 _EOC_

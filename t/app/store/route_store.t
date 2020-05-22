@@ -31,7 +31,7 @@ __DATA__
             ngx.req.read_body()
             local data = ngx.req.get_body_data()
             local route = cjson.decode(data)
-            local err = route_store.save_route(route.prefix, route)
+            local err = route_store.save_route(route)
             check_res("ok", err, true)
         }
     }
@@ -73,13 +73,13 @@ __DATA__
             "tracing"
         ],
         "props": {
-            "aa": 1
         }
     }
     ',
     'GET /query?url=/openapi/demo/info',
     'POST /save
     {
+        "key": "/openapi/demo",
         "prefix": "/openapi/demo",
         "status": 0,
         "service_name": "demo",
@@ -89,7 +89,6 @@ __DATA__
             "tracing"
         ],
         "props": {
-            "aa": 1
         }
     }
     ',

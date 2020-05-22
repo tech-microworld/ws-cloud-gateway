@@ -22,8 +22,8 @@ local _M = {version = 0.1}
 
 function _M.http_init()
     -- 加载配置文件
-    local config_file = os.getenv("config.file") or "conf/app.json"
-    config:init(config_file)
+    local config_file = os.getenv("gateway_config_file") or "conf/app.json"
+    config.init(config_file)
 
     require("app.core.ctx").init()
 end
