@@ -23,6 +23,7 @@ local pairs = pairs
 local ngx = ngx
 local route_store = require("app.store.route_store")
 local config = require("app.config")
+local tab_nkeys = require("table.nkeys")
 
 local _M = {}
 
@@ -71,6 +72,10 @@ function _M.get_dispatcher()
                     "default"
                 }
             }
+        end
+
+        if not route or tab_nkeys(route.plugins) == 0 then
+            route.plugins = {"default"}
         end
 
         local dispatcher_plugins = {}
