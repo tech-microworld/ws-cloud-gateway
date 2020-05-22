@@ -41,3 +41,7 @@ github: <https://github.com/tech-microworld/my-cloud-gateway>
 - [ ] 统一配置管理
 - [ ] gRPC 代理
 
+## 鸣谢
+
+- [incubator-apisix](https://github.com/apache/incubator-apisix)
+
