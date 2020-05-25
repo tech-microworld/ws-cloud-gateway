@@ -26,7 +26,8 @@ no_long_string();
 no_root_location();
 
 my $app_home = cwd();
-my $config_file = "$app_home/$ENV{'gateway_config_file'}";
+my $config_file = $ENV{'gateway_config_file'} || 'conf/app.json';
+my $config_file = "$app_home/$config_file";
 
 add_block_preprocessor(sub {
     # my $block = shift;
