@@ -26,9 +26,9 @@ start: default
 .PHONY: deps
 deps: default
 ifeq ($(LUAROCKS_VER),luarocks 3.)
-	luarocks install --lua-dir=$(LUAJIT_DIR) rockspec/my-cloud-gateway-master-0.rockspec --tree=deps --only-deps --local
+	luarocks install --lua-dir=$(LUAJIT_DIR) rockspec/ws-cloud-gateway-master-0.rockspec --tree=deps --only-deps --local
 else
-	luarocks install rockspec/my-cloud-gateway-master-0.rockspec --tree=deps --only-deps --local
+	luarocks install rockspec/ws-cloud-gateway-master-0.rockspec --tree=deps --only-deps --local
 endif
 
 ### test:			执行测试用例

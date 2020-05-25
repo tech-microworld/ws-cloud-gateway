@@ -1,15 +1,15 @@
-# my-cloud-gateway
+# ws-cloud-gateway
 
 基于 openresty + etcd 实现的网关服务
 
-- gateway: <https://github.com/tech-microworld/my-cloud-gateway>
-- dashboard: <https://github.com/tech-microworld/my-cloud-admin>
+- gateway: <https://github.com/tech-microworld/ws-cloud-gateway>
+- dashboard: <https://github.com/tech-microworld/ws-cloud-admin>
 
-目前市面上已经有很多网关组件，my-cloud-gateway 的定位是比更加轻量，只保留在实践中经常使用到的组件，同时可以自定义插件，针对不用业务，定制化个性功能。
+目前市面上已经有很多网关组件，ws-cloud-gateway 的定位是比更加轻量，只保留在实践中经常使用到的组件，同时可以自定义插件，针对不用业务，定制化个性功能。
 
 项目中参考了 [incubator-apisix](https://github.com/apache/incubator-apisix)，同时有部分代码直接引用了apisix源码。
 
-## 为什么选择 my-cloud-gateway
+## 为什么选择 ws-cloud-gateway
 
 1. 高性能：底层使用 nginx 异步事件驱动的网络通信模型
 2. 轻量、灵活：将多个微服务组件整合到一起，对服务器开销小（节省服务器成本），适合初创业务，同时后期业务规模扩大后也容易调整
@@ -20,7 +20,7 @@
 
 ## 文档
 
-<https://tech-microworld.github.io/my-cloud/gateway/>
+<https://tech-microworld.github.io/ws-cloud/gateway/>
 
 ## 整体架构
 

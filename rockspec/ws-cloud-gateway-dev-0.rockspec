@@ -1,15 +1,15 @@
-package = "my-cloud-gateway"
-version = "master-0"
+package = "ws-cloud-gateway"
+version = "dev-0"
 supported_platforms = {"linux", "macosx"}
 
 source = {
-    url = "git@github.com:tech-microworld/my-cloud-gateway.git",
-    branch = "v1.1",
+    url = "git@github.com:tech-microworld/ws-cloud-gateway.git",
+    branch = "v1.0",
 }
 
 description = {
-    summary = "基于openresty + etcd实现的网关服务",
-    homepage = "https://blog.fengjx.com/openresty/gateway/",
+    summary = "基于 openresty + etcd 实现的轻量级网关服务",
+    homepage = "http://tech-microworld.github.io/ws-cloud/gateway/",
     license = "Apache License 2.0",
 }
 

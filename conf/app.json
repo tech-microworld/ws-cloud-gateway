@@ -12,7 +12,7 @@
         "rewrite_plugin"
     ],
     "admin": {
-        "jwt_secret": "my-cloud-gateway-1024",
+        "jwt_secret": "ws-cloud-gateway-1024",
         "account": {
             "admin": {
                 "password": "admin",
