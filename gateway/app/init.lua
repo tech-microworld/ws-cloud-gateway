@@ -38,6 +38,8 @@ function _M.http_init_worker()
     ctx.init_worker()
 end
 
+do
+
 local protocol_handler = {
     http = function(dispatcher)
         dispatcher:do_in_rewrite()
@@ -56,6 +58,8 @@ function _M.http_rewrite()
         resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "dispatcher error")
     end
 end
+
+end -- do
 
 function _M.http_access()
     local dispatcher = require("app.core.ctx").get_dispatcher()
