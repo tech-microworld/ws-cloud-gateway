@@ -14,6 +14,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
+local ngx = ngx
 local log = require("app.core.log")
 local route_store = require("app.store.route_store")
 local tab_nkeys = require("table.nkeys")
@@ -21,7 +22,7 @@ local discovery_stroe = require("app.store.discovery_stroe")
 local balancer = require "ngx.balancer"
 local resty_roundrobin = require "resty.roundrobin"
 local str_tils = require("app.utils.str_utils")
-local ngx = ngx
+local resp = require("app.core.response")
 
 local _M = {
     name = "discovery",
@@ -42,12 +43,10 @@ function _M.do_in_rewrite(route)
     var.target_service_name = service_name
 
     local service_nodes = discovery_stroe.get_service_nodes_cache(service_name)
-    local node_not_found_resp = route.props.discovery_node_not_found_resp or "no server node start"
 
     if not service_nodes or tab_nkeys(service_nodes) < 1 then
-        log.error("no server node start, uri: ", var.uri)
-        ngx.say(node_not_found_resp)
-        ngx.exit(500)
+        log.error("can not find any service node")
+        return resp.exit(ngx.HTTP_NOT_FOUND)
     end
 
     ngx_ctx.upstream_server_list = service_nodes

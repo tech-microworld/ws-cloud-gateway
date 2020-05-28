@@ -17,6 +17,7 @@
 
 local ngx = ngx
 local resp = require("app.core.response")
+local log = require("app.core.log")
 
 -- optional 是否可选
 local _M = {
@@ -35,7 +36,8 @@ function _M.do_in_init_worker()
 end
 
 function _M.do_in_rewrite()
-    resp.exit(ngx.HTTP_NOT_FOUND, "not found")
+    log.error("can not match any service")
+    resp.exit(ngx.HTTP_NOT_FOUND)
 end
 
 function _M.do_in_access()

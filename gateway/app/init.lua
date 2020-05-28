@@ -15,8 +15,10 @@
 -- limitations under the License.
 --
 local ngx = ngx
+local pcall = pcall
 local log = require("app.core.log")
 local config = require("app.config")
+local resp = require("app.core.response")
 
 local _M = {version = 0.1}
 
@@ -36,10 +38,28 @@ function _M.http_init_worker()
     ctx.init_worker()
 end
 
+do
+
+local protocol_handler = {
+    http = function(dispatcher)
+        dispatcher:do_in_rewrite()
+    end,
+    grpc = function()
+        ngx.exec("@grpc_pass")
+    end
+}
+
 function _M.http_rewrite()
     local dispatcher = require("app.core.ctx").get_dispatcher()
-    dispatcher:do_in_rewrite()
+    local protocol = dispatcher.route.protocol
+    local ok = pcall(protocol_handler[protocol], dispatcher)
+    if not ok then
+        log.error("dispatcher error")
+        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "dispatcher error")
+    end
 end
+
+end -- do
 
 function _M.http_access()
     local dispatcher = require("app.core.ctx").get_dispatcher()
@@ -69,6 +89,12 @@ end
 function _M.http_log()
     local dispatcher = require("app.core.ctx").get_dispatcher()
     dispatcher:do_in_log()
+end
+
+-- grpc
+function _M.grpc_rewrite()
+    local dispatcher = require("app.core.ctx").get_dispatcher()
+    dispatcher:do_in_rewrite()
 end
 
 return _M
