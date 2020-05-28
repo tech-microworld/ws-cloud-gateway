@@ -83,15 +83,30 @@ location = /t {
             "tracing"
         ],
         "props": {
-            "rewrite_url_regex" : "^/innerapi/(.*)/",
-            "rewrite_replace" : "/"
+        }
+    }
+    ',
+    'POST /t
+    {
+        "prefix": "/hello.GreeterService",
+        "status": 1,
+        "service_name": "grpc-demo",
+        "protocol": "grpc",
+        "plugins": [
+            "discovery",
+            "tracing"
+        ],
+        "props": {
         }
     }
     '
+
+    
 ]
 
 --- response_body eval
 [
+    "ok\n",
     "ok\n",
     "ok\n",
     "ok\n"
@@ -141,6 +156,12 @@ POST /t
     {
         "service_name": "demo2",
         "upstream": "127.0.0.1:1027",
+        "weight": 1,
+        "status": 1
+    },
+    {
+        "service_name": "grpc-demo",
+        "upstream": "127.0.0.1:2021",
         "weight": 1,
         "status": 1
     }
