@@ -36,7 +36,7 @@ function _M.do_in_init_worker()
 end
 
 function _M.do_in_rewrite()
-    log.error("no service match")
+    log.error("can not match any service")
     resp.exit(ngx.HTTP_NOT_FOUND)
 end
 

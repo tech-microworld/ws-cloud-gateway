@@ -45,7 +45,7 @@ function _M.do_in_rewrite(route)
     local service_nodes = discovery_stroe.get_service_nodes_cache(service_name)
 
     if not service_nodes or tab_nkeys(service_nodes) < 1 then
-        log.error("no service nodes found")
+        log.error("can not find any service node")
         return resp.exit(ngx.HTTP_NOT_FOUND)
     end
 
