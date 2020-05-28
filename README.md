@@ -1,6 +1,6 @@
 # ws-cloud-gateway
 
-基于 openresty + etcd 实现的网关服务
+基于 openresty + etcd 实现的轻量级网关服务
 
 - gateway: <https://github.com/tech-microworld/ws-cloud-gateway>
 - dashboard: <https://github.com/tech-microworld/ws-cloud-admin>
@@ -36,7 +36,7 @@
 - [x] 服务发现，动态路由
 - [x] 自动生成 requestId，方便链路跟踪
 - [x] 控制面板
-- [ ] gRPC 代理
+- [x] gRPC 代理
 - [ ] 动态ip防火墙
 - [ ] 限流器
 - [ ] 用户登录认证
