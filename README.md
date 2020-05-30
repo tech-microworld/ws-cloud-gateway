@@ -5,6 +5,8 @@
 - gateway: <https://github.com/tech-microworld/ws-cloud-gateway>
 - dashboard: <https://github.com/tech-microworld/ws-cloud-admin>
 
+## 简介
+
 目前市面上已经有很多网关组件，ws-cloud-gateway 的定位是比更加轻量，只保留在实践中经常使用到的组件，同时可以自定义插件，针对不用业务，定制化个性功能。
 
 项目中参考了 [incubator-apisix](https://github.com/apache/incubator-apisix)，同时有部分代码直接引用了apisix源码。
@@ -51,4 +53,8 @@
 ## 鸣谢
 
 - [incubator-apisix](https://github.com/apache/incubator-apisix)
+
+## 作者
+
+![作者微信](./doc/img/author-wechat.jpeg)
 
