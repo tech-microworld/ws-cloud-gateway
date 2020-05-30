@@ -9,6 +9,9 @@
 
 项目中参考了 [incubator-apisix](https://github.com/apache/incubator-apisix)，同时有部分代码直接引用了apisix源码。
 
+- [![Join the chat at https://gitter.im/ws-cloud-gateway/community](https://badges.gitter.im/ws-cloud-gateway/community.svg)](https://gitter.im/ws-cloud-gateway/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) Gitter 讨论组
+- [使用文档](https://tech-microworld.github.io/ws-cloud/gateway/)
+
 ## 为什么选择 ws-cloud-gateway
 
 1. 高性能：底层使用 nginx 异步事件驱动的网络通信模型
@@ -17,10 +20,6 @@
 4. 上游服务节点使用etcd管理，可以通过推模式更新节点配置
 5. 无需重启服务，可实时修改参数配置
 6. 支持控制面板管理
-
-## 文档
-
-<https://tech-microworld.github.io/ws-cloud/gateway/>
 
 ## 整体架构
 
