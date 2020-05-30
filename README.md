@@ -1,5 +1,7 @@
 # ws-cloud-gateway
 
+[![Join the chat at https://gitter.im/ws-cloud-gateway/community](https://badges.gitter.im/ws-cloud-gateway/community.svg)](https://gitter.im/ws-cloud-gateway/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 基于 openresty + etcd 实现的轻量级网关服务
 
 - gateway: <https://github.com/tech-microworld/ws-cloud-gateway>
