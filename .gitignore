@@ -8,5 +8,8 @@ t/servroot
 conf/app-dev.json
 deps
 
-.travis/openwhisk-utilities
+.travis/
+!.travis/ASF-Release.cfg
 bin/lj-releng
+
+benchmark/out/

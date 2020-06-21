@@ -12,17 +12,27 @@ endif
 
 LUAJIT_DIR ?= $(shell ${OR_EXEC} -V 2>&1 | grep prefix | grep -Eo 'prefix=(.*)/nginx\s+--' | grep -Eo '/.*/')luajit
 
-### init:			初始化
+### init:				初始化
 .PHONY: init
 init: default
 	@prove -I./ -r -s t/app/init
 
-### start:			启动服务
+### start:				启动服务
 start: default
 	@echo "server start"
 	@openresty -p `pwd` -c conf/nginx.conf -g 'daemon off;'
 
-### deps:			安装依赖
+### start-background:	后台启动服务
+start-background: default
+	@echo "server start"
+	@openresty -p `pwd` -c conf/nginx.conf
+
+### stop:				停止服务
+stop: default
+	@echo "stop start"
+	@openresty -p `pwd` -c conf/nginx.conf -s stop
+
+### deps:				安装依赖
 .PHONY: deps
 deps: default
 ifeq ($(LUAROCKS_VER),luarocks 3.)
@@ -31,7 +41,7 @@ else
 	luarocks install rockspec/ws-cloud-gateway-master-0.rockspec --tree=deps --only-deps --local
 endif
 
-### test:			执行测试用例
+### test:				执行测试用例
 .PHONY: test
 test:
 	@prove -I./ -r -s t
@@ -46,7 +56,7 @@ test-core:
 	@prove -I./ -r -s t/app/core
 
 
-### utils:			安装lj-releng
+### utils:				安装lj-releng
 .PHONY: utils
 utils:
 ifeq ("$(wildcard bin/lj-releng)", "")
@@ -54,13 +64,13 @@ ifeq ("$(wildcard bin/lj-releng)", "")
 	chmod a+x bin/lj-releng
 endif
 
-### lint:			代码风格检查
+### lint:				代码风格检查
 .PHONY: lint
 lint: utils
 	./bin/check-lua-code-style.sh
 
 
-### help: 			Makefile帮助
+### help: 				Makefile帮助
 .PHONY: help
 help: default
 	@echo Makefile cmd:
@@ -85,3 +95,25 @@ license-header: license-tool
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./gateway -f '*.lua' -t ASFLicenseHeaderLua.txt
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.pm' -t ASFLicenseHeaderBash.txt
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.t' -t ASFLicenseHeaderBash.txt
+
+.PHONY: benchmark
+### benchmark-tool:		安装 benchmark 工具
+benchmark-tool:
+ifeq ("$(wildcard .travis/stapxx/samples/lj-lua-stacks.sxx)", "")
+	git clone https://github.com/openresty/stapxx.git .travis/stapxx
+endif
+ifeq ("$(wildcard .travis/FlameGraph/flamegraph.pl)", "")
+	git clone https://github.com/brendangregg/FlameGraph.git .travis/FlameGraph
+endif
+ifeq ("$(wildcard .travis/openresty-systemtap-toolkit/fix-lua-bt)", "")
+	git clone https://github.com/openresty/openresty-systemtap-toolkit.git .travis/openresty-systemtap-toolkit
+endif
+	@echo done
+
+### benchmark-wrk		wrk 压力测试
+benchmark-wrk:			
+	sh benchmark/run-wrk.sh
+
+### benchmark-flame		绘制火焰图
+benchmark-flame:			
+	cd benchmark && sh benchmark/flame.sh
