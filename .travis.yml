@@ -17,14 +17,13 @@ addons:
       - etcd
 
 before_install:
-  - echo $PWD/bin/travis-runner.sh
-  - $PWD/bin/travis-runner.sh before_install
+  - ./bin/travis-runner.sh before_install
 
 install:
-  - $PWD/bin/travis-runner.sh do_install
+  - ./bin/travis-runner.sh do_install
 
 script:
-  - $PWD/bin/travis-runner.sh script
+  - ./bin/travis-runner.sh script
 
 after_success:
-  - $PWD/bin/travis-runner.sh after_success
+  - ./bin/travis-runner.sh after_success
