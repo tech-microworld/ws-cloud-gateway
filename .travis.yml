@@ -17,6 +17,7 @@ addons:
       - etcd
 
 before_install:
+  - echo $PWD/bin/travis-runner.sh
   - $PWD/bin/travis-runner.sh before_install
 
 install:
