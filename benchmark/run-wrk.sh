@@ -17,10 +17,9 @@
 # limitations under the License.
 #
 
+nginx -p $PWD/server || exit 1
 
 token=e09d6153f1c15395397be3639d144794
-
-echo 'server started'
 
 curl http://127.0.0.1:10000/admin/routes/save -H "X-Api-Token: ${token}" -X POST -d '
 {
@@ -41,18 +40,21 @@ curl http://127.0.0.1:10000/admin/routes/save -H "X-Api-Token: ${token}" -X POST
     }
 }'
 
+echo
+
 curl http://127.0.0.1:10000/admin/services/save -H "X-Api-Token: ${token}" -X POST -d '
 {
     "key": "/hello/127.0.0.1:1024",
     "service_name": "hello",
-    "upstream": "127.0.0.1:1024",
+    "upstream": "127.0.0.1:8080",
     "weight": 1,
     "status": 1
 }'
 
-sleep 1
+echo
 
 mkdir -p out
 wrk -c50 -t3 -d10s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
 
+nginx -p $PWD/server -s stop || exit 1
 echo 'benchmark end'

@@ -13,3 +13,4 @@ deps
 bin/lj-releng
 
 benchmark/out/
+!benchmark/server/conf/nginx.conf
