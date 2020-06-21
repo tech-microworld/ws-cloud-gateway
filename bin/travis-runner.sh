@@ -5,9 +5,13 @@ set -ex
 
 export_or_prefix() {
     export OPENRESTY_PREFIX="/usr/local/openresty-debug"
+    export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
+    openresty -V
 }
 
 install_lua_deps() {
+    export_or_prefix
+    
     echo "install lua deps"
 
     make deps
@@ -24,8 +28,6 @@ before_install() {
 }
 
 do_install() {
-    export_or_prefix
-
     wget -qO - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
     sudo apt-get -y update --fix-missing
     sudo apt-get -y install software-properties-common
@@ -63,8 +65,6 @@ do_install() {
 
 script() {
     export_or_prefix
-    export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
-    openresty -V
     sudo service etcd start
 
     make license-check
