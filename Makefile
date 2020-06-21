@@ -95,6 +95,8 @@ license-header: license-tool
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./gateway -f '*.lua' -t ASFLicenseHeaderLua.txt
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.pm' -t ASFLicenseHeaderBash.txt
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.t' -t ASFLicenseHeaderBash.txt
+	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./bin -f '*.sh' -t ASFLicenseHeaderBash.txt
+	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./benchmark -f '*.sh' -t ASFLicenseHeaderBash.txt
 
 .PHONY: benchmark
 ### benchmark-tool:			安装 benchmark 工具
