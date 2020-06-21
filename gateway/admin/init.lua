@@ -70,8 +70,9 @@ local function cors_admin()
 end
 
 local function check_api_token()
-    local token = get_headers()["X-API-TOKEN"]
+    local token = get_headers()["X-Api-Token"]
     if not token then
+        log.debug("X-Api-Token is empty")
         return false
     end
     local tokens = config_get("tokens")
@@ -95,7 +96,7 @@ local function check_token()
 
     if not token then
         log.error("admin not login")
-        resp.exit(ngx.HTTP_UNAUTHORIZED, "用户不存在")
+        resp.exit(ngx.HTTP_UNAUTHORIZED, "用户未登录")
     end
 
     local jwt_secret = config_get("admin").jwt_secret

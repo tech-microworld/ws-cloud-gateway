@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -x
 
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
@@ -26,7 +26,9 @@ stapxx_home=$home/.travis/stapxx
 flame_graph_home=$home/.travis/FlameGraph
 toolkit_home=$home/.travis/openresty-systemtap-toolkit
 
-pid=$(ps x | grep nginx | grep 'worker process' | awk 'NR==1{print $1}')
+export PATH=${stapxx_home}:${flame_graph_home}:${toolkit_home}:$PATH
+
+pid=$(ps -ef | grep nginx | grep 'worker process' | awk 'NR==1{print $2}')
 
 out=out
 

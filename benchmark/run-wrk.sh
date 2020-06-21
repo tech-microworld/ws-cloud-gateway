@@ -22,7 +22,7 @@ token=e09d6153f1c15395397be3639d144794
 
 echo 'server started'
 
-curl http://127.0.0.1:10000/admin/routes/save -H "X-API-TOKEN: ${token}" -X POST -d '
+curl http://127.0.0.1:10000/admin/routes/save -H "X-Api-Token: ${token}" -X POST -d '
 {
     "key": "/innerapi/hello",
     "protocol": "http",
@@ -41,7 +41,7 @@ curl http://127.0.0.1:10000/admin/routes/save -H "X-API-TOKEN: ${token}" -X POST
     }
 }'
 
-curl http://127.0.0.1:10000/admin/services/save -H "X-API-TOKEN: ${token}" -X POST -d '
+curl http://127.0.0.1:10000/admin/services/save -H "X-Api-Token: ${token}" -X POST -d '
 {
     "key": "/hello/127.0.0.1:1024",
     "service_name": "hello",
