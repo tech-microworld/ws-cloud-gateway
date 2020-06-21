@@ -12,6 +12,8 @@ pid=$(ps x | grep nginx | grep 'worker process' | awk 'NR==1{print $1}')
 
 out=out
 
+mkdir -p $out
+
 $stapxx_home/samples/lj-lua-stacks.sxx --arg time=5  --skip-badvars -x $pid > $out/tmp.bt
 # 处理 lj-lua-stacks.sxx 的输出，使其可读性更佳
 $toolkit_home/fix-lua-bt $out/tmp.bt > $out/flame.bt
