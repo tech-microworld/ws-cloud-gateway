@@ -20,17 +20,17 @@ init: default
 ### start:				启动服务
 start: default
 	@echo "server start"
-	@openresty -p `pwd` -c conf/nginx.conf -g 'daemon off;'
+	@nginx -p `pwd` -c conf/nginx.conf -g 'daemon off;'
 
 ### start-background:	后台启动服务
 start-background: default
 	@echo "server start"
-	@openresty -p `pwd` -c conf/nginx.conf
+	@nginx -p `pwd` -c conf/nginx.conf
 
 ### stop:				停止服务
 stop: default
 	@echo "stop start"
-	@openresty -p `pwd` -c conf/nginx.conf -s stop
+	@nginx -p `pwd` -c conf/nginx.conf -s stop
 
 ### deps:				安装依赖
 .PHONY: deps
