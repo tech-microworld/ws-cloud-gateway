@@ -4,7 +4,6 @@ sudo: required
 language: c
 script: true
 
-
 addons:
   apt:
     packages:
@@ -15,6 +14,7 @@ addons:
       - libssl-dev
       - perl
       - etcd
+      - wrk
 
 before_install:
   - ls -la ./bin

@@ -75,6 +75,10 @@ local function check_api_token()
         return false
     end
     local tokens = config_get("tokens")
+    if not tokens then
+        log.info("no api token settings")
+        return false
+    end
     if not tokens[token] then
         return false
     end

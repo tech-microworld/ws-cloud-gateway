@@ -114,7 +114,7 @@ endif
 
 ### benchmark-wrk:			wrk 压力测试
 benchmark-wrk: benchmark-tool		
-	sh benchmark/run-wrk.sh
+	cd benchmark && sh run-wrk.sh
 
 ### benchmark-flame:		绘制火焰图
 benchmark-flame: benchmark-tool		

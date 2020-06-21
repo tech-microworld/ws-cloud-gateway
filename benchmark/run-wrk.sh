@@ -56,7 +56,7 @@ curl http://127.0.0.1:10000/admin/services/save -H "X-API-TOKEN: ${token}" -X PO
 
 sleep 1
 
-wrk -c100 -t10 -d10s http://127.0.0.1:10000/innerapi/hello
+wrk -c50 -t10 -d20s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
 
 make stop || exit 1
 echo 'end'

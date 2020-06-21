@@ -86,12 +86,12 @@ script() {
 
     sleep 1
     cat logs/error.log
-
 }
 
 after_success() {
-    cat luacov.stats.out
-    luacov-coveralls
+    # cat luacov.stats.out
+    # luacov-coveralls
+    cat benchmark/out/wrk.out
 }
 
 case_opt=$1
