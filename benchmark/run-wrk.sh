@@ -17,7 +17,8 @@
 # limitations under the License.
 #
 
-nginx -p $PWD/server || exit 1
+mkdir -p `pwd`/server/logs
+nginx -p `pwd`/server -c conf/nginx.conf || exit 1
 
 token=e09d6153f1c15395397be3639d144794
 
@@ -54,7 +55,7 @@ curl http://127.0.0.1:10000/admin/services/save -H "X-Api-Token: ${token}" -X PO
 echo
 
 mkdir -p out
-wrk -c50 -t3 -d10s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
+wrk -c50 -t5 -d20s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
 
-nginx -p $PWD/server -s stop || exit 1
+nginx -p `pwd`/server -c conf/nginx.conf -s stop || exit 1
 echo 'benchmark end'
