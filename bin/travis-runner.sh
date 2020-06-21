@@ -56,10 +56,10 @@ do_install() {
         tar -zxf ${lua_version}.tar.gz
         cd ..
     fi
-    cd ${lua_version}
+    cd build-cache/${lua_version}
     make linux test
     sudo make install
-    cd ..
+    cd ../../
 
     luarocks_version=luarocks-3.3.1
     if [ ! -f "build-cache/${luarocks_version}" ]; then
@@ -68,11 +68,11 @@ do_install() {
         tar zxpf ${luarocks_version}.tar.gz
         cd ..
     fi
-    cd ${luarocks_version}
+    cd build-cache/${luarocks_version}
     ./configure --prefix=/usr > build.log 2>&1 || (cat build.log && exit 1)
     make build > build.log 2>&1 || (cat build.log && exit 1)
     sudo make install > build.log 2>&1 || (cat build.log && exit 1)
-    cd ..
+    cd ../../
 
     sudo luarocks install luacheck > build.log 2>&1 || (cat build.log && exit 1)
 
