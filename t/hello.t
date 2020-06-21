@@ -25,7 +25,7 @@ __DATA__
 --- request
     GET /app-name
 --- response_body eval
-['resty-gateway']
+['ws-cloud-gateway']
 
 
 === TEST 2: discard body
