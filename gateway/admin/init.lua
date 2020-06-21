@@ -35,29 +35,58 @@ local router
 local req_mapping = {}
 
 local function cors_admin()
-
     local method = get_method()
     log.info("cors admin: ", method)
     if method == "OPTIONS" then
-        resp.set_header("Access-Control-Allow-Origin", "*",
+        resp.set_header(
+            "Access-Control-Allow-Origin",
+            "*",
             "Access-Control-Allow-Methods",
             "POST, GET, PUT, OPTIONS, DELETE, PATCH",
-            "Access-Control-Max-Age", "3600",
-            "Access-Control-Allow-Headers", "*",
-            "Access-Control-Allow-Credentials", "true",
-            "Content-Length", "0",
-            "Content-Type", "text/plain")
+            "Access-Control-Max-Age",
+            "3600",
+            "Access-Control-Allow-Headers",
+            "*",
+            "Access-Control-Allow-Credentials",
+            "true",
+            "Content-Length",
+            "0",
+            "Content-Type",
+            "text/plain"
+        )
         ngx_exit(200)
     end
 
-    resp.set_header("Access-Control-Allow-Origin", "*",
-                            "Access-Control-Allow-Credentials", "true",
-                            "Access-Control-Expose-Headers", "*",
-                            "Access-Control-Max-Age", "3600")
+    resp.set_header(
+        "Access-Control-Allow-Origin",
+        "*",
+        "Access-Control-Allow-Credentials",
+        "true",
+        "Access-Control-Expose-Headers",
+        "*",
+        "Access-Control-Max-Age",
+        "3600"
+    )
 end
 
+local function check_api_token()
+    local token = get_headers()["X-API-TOKEN"]
+    if not token then
+        return false
+    end
+    local tokens = config_get("tokens")
+    if not tokens[token] then
+        return false
+    end
+    return true
+end
 
 local function check_token()
+    if check_api_token() then
+        log.info("api token auth")
+        return
+    end
+
     local token = get_headers()["X-Token"]
 
     if not token then
