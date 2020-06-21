@@ -159,7 +159,7 @@ _M.save_service_node = save_service_node
 
 -- 监听服务节点数据变更
 local function watch_services()
-    if 0 == ngx.worker.id() then
+    if 0 ~= ngx.worker.id() then
         log.debug("worker id is not 0 and do nothing")
         return
     end
@@ -200,8 +200,8 @@ end
 
 -- 加载服务节点注册信息
 local function load_services()
-    if 0 == ngx.worker.id() then
-        log.debug("worker id is not 0 and do nothing")
+    if 0 ~= ngx.worker.id() then
+        log.info("worker id is not 0 and do nothing")
         return
     end
 

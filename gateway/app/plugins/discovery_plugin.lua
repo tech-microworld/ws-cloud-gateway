@@ -32,8 +32,8 @@ local _M = {
 }
 
 function _M.do_in_init_worker()
-    route_store.init()
     discovery_stroe.init()
+    route_store.init()
 end
 
 function _M.do_in_rewrite(route)

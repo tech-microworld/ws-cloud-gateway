@@ -161,6 +161,10 @@ end
 
 -- 初始化
 function _M.init()
+    if 0 ~= ngx.worker.id() then
+        log.info("worker id is not 0 and do nothing")
+        return
+    end
     local ok, err = timer_at(0, load_routes)
     if not ok then
         log.error("failed to load routes: ", err)
