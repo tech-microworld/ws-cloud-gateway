@@ -3,3 +3,27 @@ sudo: required
 
 language: c
 script: true
+
+
+addons:
+  apt:
+    packages:
+      - cpanminus
+      - build-essential
+      - libncurses5-dev
+      - libreadline-dev
+      - libssl-dev
+      - perl
+      - etcd
+
+before_install:
+  - $PWD/bin/travis-runner.sh before_install
+
+install:
+  - $PWD/bin/travis-runner.sh do_install
+
+script:
+  - $PWD/bin/travis-runner.sh script
+
+after_success:
+  - $PWD/bin/travis-runner.sh after_success

@@ -97,7 +97,7 @@ license-header: license-tool
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.t' -t ASFLicenseHeaderBash.txt
 
 .PHONY: benchmark
-### benchmark-tool:		安装 benchmark 工具
+### benchmark-tool:			安装 benchmark 工具
 benchmark-tool:
 ifeq ("$(wildcard .travis/stapxx/samples/lj-lua-stacks.sxx)", "")
 	git clone https://github.com/openresty/stapxx.git .travis/stapxx
@@ -110,10 +110,10 @@ ifeq ("$(wildcard .travis/openresty-systemtap-toolkit/fix-lua-bt)", "")
 endif
 	@echo done
 
-### benchmark-wrk		wrk 压力测试
+### benchmark-wrk:			wrk 压力测试
 benchmark-wrk: benchmark-tool		
 	sh benchmark/run-wrk.sh
 
-### benchmark-flame		绘制火焰图
+### benchmark-flame:		绘制火焰图
 benchmark-flame: benchmark-tool		
 	cd benchmark && sh flame.sh
