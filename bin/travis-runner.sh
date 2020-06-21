@@ -33,7 +33,15 @@ do_install() {
     sudo add-apt-repository -y ppa:longsleep/golang-backports
 
     sudo apt-get update
-    sudo apt-get install openresty-debug lua5.3 liblua5.3-dev
+    sudo apt-get install openresty-debug
+
+    curl -R -O http://www.lua.org/ftp/lua-5.3.5.tar.gz
+    tar -zxf lua-5.3.5.tar.gz
+    cd lua-5.3.5
+    make linux test
+    sudo make install
+    cd ..
+    rm -rf lua-5.3.5
 
     wget https://luarocks.org/releases/luarocks-3.3.1.tar.gz
     tar zxpf luarocks-3.3.1.tar.gz
@@ -42,7 +50,7 @@ do_install() {
     make build > build.log 2>&1 || (cat build.log && exit 1)
     sudo make install > build.log 2>&1 || (cat build.log && exit 1)
     cd ..
-    rm -rf cd luarocks-3.3.1
+    rm -rf luarocks-3.3.1
 
     sudo luarocks install luacheck > build.log 2>&1 || (cat build.log && exit 1)
 
