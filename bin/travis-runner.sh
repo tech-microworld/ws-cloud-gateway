@@ -22,7 +22,7 @@ set -ex
 export_or_prefix() {
     export OPENRESTY_PREFIX="/usr/local/openresty-debug"
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
-    openresty -V
+    export ETCDCTL_API=3
 }
 
 install_lua_deps() {
@@ -94,7 +94,7 @@ script() {
     make benchmark-wrk
     make stop
     sleep 1
-    tail -n20  logs/error.log
+    tail -n50  logs/error.log
 }
 
 after_success() {
