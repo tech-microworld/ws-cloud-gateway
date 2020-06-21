@@ -20,10 +20,6 @@
 
 token=e09d6153f1c15395397be3639d144794
 
-make start-background || exit 1
-
-sleep 3
-
 echo 'server started'
 
 curl http://127.0.0.1:10000/admin/routes/save -H "X-API-TOKEN: ${token}" -X POST -d '

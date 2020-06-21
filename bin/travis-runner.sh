@@ -82,10 +82,10 @@ script() {
     make license-check
     make init
     make test
+    make start-background
+    sleep 2
     make benchmark-wrk
-    sleep 1
     make stop
-
     sleep 1
     cat logs/error.log
 }
