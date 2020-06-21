@@ -36,7 +36,7 @@ install_lua_deps() {
 
 before_install() {
     sudo cpanm --notest Test::Nginx >build.log 2>&1 || (cat build.log && exit 1)
-    sleep 5
+    sleep 1
 }
 
 do_install() {
@@ -95,7 +95,7 @@ script() {
     make benchmark-wrk
     make stop
     sleep 1
-    cat logs/error.log
+    tail -n20  logs/error.log
 }
 
 after_success() {

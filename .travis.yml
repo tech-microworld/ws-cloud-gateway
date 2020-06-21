@@ -15,6 +15,8 @@ addons:
       - perl
       - etcd
       - wrk
+      - curl
+      - wget
 
 cache:
   directories:

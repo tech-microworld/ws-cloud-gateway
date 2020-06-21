@@ -53,6 +53,6 @@ curl http://127.0.0.1:10000/admin/services/save -H "X-API-TOKEN: ${token}" -X PO
 sleep 1
 
 mkdir -p out
-wrk -c50 -t10 -d20s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
+wrk -c50 -t3 -d10s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
 
 echo 'benchmark end'
