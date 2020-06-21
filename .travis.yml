@@ -16,6 +16,10 @@ addons:
       - etcd
       - wrk
 
+cache:
+  directories:
+    - build-cache
+
 before_install:
   - ls -la ./bin
   - ./bin/travis-runner.sh before_install

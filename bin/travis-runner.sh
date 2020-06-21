@@ -83,6 +83,8 @@ script() {
     make init
     make test
     make benchmark-wrk
+    sleep 1
+    make stop
 
     sleep 1
     cat logs/error.log

@@ -58,5 +58,4 @@ sleep 1
 
 wrk -c50 -t10 -d20s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
 
-make stop || exit 1
-echo 'end'
+echo 'benchmark end'
