@@ -11,15 +11,11 @@ export_or_prefix() {
 
 install_lua_deps() {
     export_or_prefix
-    
     echo "install lua deps"
 
     make deps
     luarocks install luacov-coveralls --tree=deps --local > build.log 2>&1 || (cat build.log && exit 1)
 
-    sudo rm -rf build-cache/deps
-    sudo cp -r deps build-cache/
-    sudo cp rockspec/apisix-master-0.rockspec build-cache/
 }
 
 before_install() {
