@@ -35,7 +35,7 @@ do_install() {
     sudo apt-get update
     sudo apt-get install openresty-debug lua5.3 liblua5.3-dev
 
-    get https://luarocks.org/releases/luarocks-3.3.1.tar.gz
+    wget https://luarocks.org/releases/luarocks-3.3.1.tar.gz
     tar zxpf luarocks-3.3.1.tar.gz
     cd luarocks-3.3.1
     ./configure --prefix=/usr > build.log 2>&1 || (cat build.log && exit 1)
