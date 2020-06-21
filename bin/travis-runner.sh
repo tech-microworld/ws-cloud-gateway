@@ -49,22 +49,30 @@ do_install() {
     sudo apt-get update
     sudo apt-get install openresty-debug
 
-    curl -R -O http://www.lua.org/ftp/lua-5.3.5.tar.gz
-    tar -zxf lua-5.3.5.tar.gz
-    cd lua-5.3.5
+    lua_version=lua-5.3.5
+    if [ ! -f "build-cache/${lua_version}" ]; then
+        cd build-cache
+        curl -R -O http://www.lua.org/ftp/${lua_version}.tar.gz
+        tar -zxf ${lua_version}.tar.gz
+        cd ..
+    fi
+    cd ${lua_version}
     make linux test
     sudo make install
     cd ..
-    rm -rf lua-5.3.5
 
-    wget https://luarocks.org/releases/luarocks-3.3.1.tar.gz
-    tar zxpf luarocks-3.3.1.tar.gz
-    cd luarocks-3.3.1
+    luarocks_version=luarocks-3.3.1
+    if [ ! -f "build-cache/${luarocks_version}" ]; then
+        cd build-cache
+        wget https://luarocks.org/releases/${luarocks_version}.tar.gz
+        tar zxpf ${luarocks_version}.tar.gz
+        cd ..
+    fi
+    cd ${luarocks_version}
     ./configure --prefix=/usr > build.log 2>&1 || (cat build.log && exit 1)
     make build > build.log 2>&1 || (cat build.log && exit 1)
     sudo make install > build.log 2>&1 || (cat build.log && exit 1)
     cd ..
-    rm -rf luarocks-3.3.1
 
     sudo luarocks install luacheck > build.log 2>&1 || (cat build.log && exit 1)
 

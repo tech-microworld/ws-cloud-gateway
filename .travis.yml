@@ -19,6 +19,7 @@ addons:
 cache:
   directories:
     - build-cache
+    - deps
 
 before_install:
   - ls -la ./bin
