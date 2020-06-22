@@ -31,9 +31,10 @@ install_etcd() {
     export ETCDCTL_API=3
     ETCD_VER=v3.4.9
     BUILD_DIR=build-cache/etcd
-    BIN_DIR=${BUILD_DIR}
+    BIN_DIR=${BUILD_DIR}/bin
 
     if [ ! -f "${BIN_DIR}/etcd" ]; then
+        mkdir -p ${BIN_DIR}
         # choose either URL
         # GOOGLE_URL=https://storage.googleapis.com/etcd
         GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
