@@ -44,7 +44,7 @@ install_etcd() {
         tar xzvf $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${BIN_DIR} --strip-components=1
         rm -f $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz
     fi
-    
+
     ${BIN_DIR}/etcd --version
     ${BIN_DIR}/etcdctl version
     # start etcd server
