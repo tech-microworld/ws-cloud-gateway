@@ -77,14 +77,12 @@ do_install() {
 
     install_lua_deps
 
-    # sudo apt-get install tree -y
-    # tree deps
-
 }
 
 script() {
     export_or_prefix
     sudo service etcd start
+    ps -ef | grep etcd
 
     make license-check
     make init
@@ -94,7 +92,7 @@ script() {
     make benchmark-wrk
     make stop
     sleep 1
-    tail -n50  logs/error.log
+    cat logs/error.log
 }
 
 after_success() {
