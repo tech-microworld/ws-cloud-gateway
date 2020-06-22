@@ -1,8 +1,12 @@
 dist: xenial
 sudo: required
 
-language: c
-script: true
+language: 
+  - c
+  - go
+
+go:
+  - master  
 
 addons:
   apt:

@@ -35,6 +35,9 @@ install_lua_deps() {
 }
 
 before_install() {
+    export GO111MOUDULE=on
+    echo $GOPATH
+    echo $GOROOT
     sudo cpanm --notest Test::Nginx >build.log 2>&1 || (cat build.log && exit 1)
     sleep 1
 }
