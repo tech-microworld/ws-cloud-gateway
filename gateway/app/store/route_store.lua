@@ -77,7 +77,12 @@ local function query_routes()
     local resp, err = etcd.readdir(etcd_prefix)
     if err ~= nil then
         log.error("failed to load routes", err)
-        return
+        return err
+    end
+
+    if not resp or not resp.body then
+        log.error("query eoutes from etcd: ", str_utils.table_to_string(resp))
+        return nil, "body is nil"
     end
 
     local routes = {}
@@ -138,6 +143,7 @@ function _M.save_route(route)
     route.time = time.now() * 1000
     local _, err = etcd.set(etcd_key, route)
     if err then
+        log.error("save route error: ", err)
         return err
     end
     if route.status == 1 then
