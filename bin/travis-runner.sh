@@ -48,7 +48,6 @@ install_etcd() {
     ${BIN_DIR}/etcd --version
     ${BIN_DIR}/etcdctl version
     # start etcd server
-    ${BIN_DIR}/etcd
     nohup ${BIN_DIR}/etcd > etcd.log 2>&1 &
     sleep 3
 
