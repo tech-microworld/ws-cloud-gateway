@@ -104,6 +104,7 @@ do_install() {
 
     sudo luarocks install luacheck > build.log 2>&1 || (cat build.log && exit 1)
 
+    install_etcd
     install_lua_deps
 
 }
