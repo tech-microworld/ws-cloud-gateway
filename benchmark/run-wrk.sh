@@ -55,7 +55,7 @@ curl http://127.0.0.1:10000/admin/services/save -H "X-Api-Token: ${token}" -X PO
 echo
 
 mkdir -p out
-wrk -c50 -t5 -d20s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
+wrk -c1 -t1 -d3s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
 
 nginx -p `pwd`/server -c conf/nginx.conf -s stop || exit 1
 echo 'benchmark end'
