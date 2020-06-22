@@ -113,8 +113,6 @@ do_install() {
 
 script() {
     export_or_prefix
-    sudo service etcd start
-    ps -ef | grep etcd
 
     make license-check
     make init
@@ -124,7 +122,7 @@ script() {
     make benchmark-wrk
     make stop
     sleep 1
-    cat logs/error.log
+    tail -n50 logs/error.log
 }
 
 after_success() {
