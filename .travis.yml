@@ -1,12 +1,7 @@
 dist: xenial
 sudo: required
 
-language: 
-  - c
-  - go
-
-go:
-  - master  
+language: c
 
 addons:
   apt:
@@ -17,7 +12,6 @@ addons:
       - libreadline-dev
       - libssl-dev
       - perl
-      - etcd
       - wrk
       - curl
       - wget

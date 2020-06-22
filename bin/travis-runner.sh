@@ -22,8 +22,37 @@ set -ex
 export_or_prefix() {
     export OPENRESTY_PREFIX="/usr/local/openresty-debug"
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
-    export ETCDCTL_API=3
+    export GO111MOUDULE=on
+    echo $GOPATH
+    echo $GOROOT
 }
+
+install_etcd() {
+    export ETCDCTL_API=3
+    ETCD_VER=v3.4.9
+    BUILD_DIR=build-cache/etcd
+    BIN_DIR=${BUILD_DIR}
+
+    if [ ! -f "${BIN_DIR}/etcd" ]; then
+        # choose either URL
+        # GOOGLE_URL=https://storage.googleapis.com/etcd
+        GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
+        DOWNLOAD_URL=${GITHUB_URL}
+
+        curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o ${BUILD_DIR}/etcd-${ETCD_VER}-linux-amd64.tar.gz
+        tar xzvf $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${BIN_DIR} --strip-components=1
+        rm -f $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz
+    fi
+    
+    ${BIN_DIR}/etcd --version
+    ${BIN_DIR}/etcdctl version
+    # start etcd server
+    ${BIN_DIR}/etcd
+
+    ${BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
+    ${BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
+}
+
 
 install_lua_deps() {
     export_or_prefix
@@ -35,9 +64,6 @@ install_lua_deps() {
 }
 
 before_install() {
-    export GO111MOUDULE=on
-    echo $GOPATH
-    echo $GOROOT
     sudo cpanm --notest Test::Nginx >build.log 2>&1 || (cat build.log && exit 1)
     sleep 1
 }
@@ -47,9 +73,9 @@ do_install() {
     sudo apt-get -y update --fix-missing
     sudo apt-get -y install software-properties-common
     sudo add-apt-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
-
+    sudo add-apt-repository ppa:longsleep/golang-backports
     sudo apt-get update
-    sudo apt-get install openresty-debug
+    sudo apt-get install openresty-debug golang-go
 
     lua_version=lua-5.3.5
     if [ ! -f "build-cache/${lua_version}" ]; then
