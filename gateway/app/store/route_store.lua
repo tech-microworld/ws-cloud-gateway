@@ -81,7 +81,6 @@ local function query_routes()
     end
 
     if not resp or not resp.body then
-        log.error("query eoutes from etcd: ", str_utils.table_to_string(resp))
         return nil, "body is nil"
     end
 
