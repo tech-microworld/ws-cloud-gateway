@@ -49,6 +49,8 @@ install_etcd() {
     ${BIN_DIR}/etcdctl version
     # start etcd server
     ${BIN_DIR}/etcd
+    nohup ${BIN_DIR}/etcd > etcd.log 2>&1 &
+    sleep 3
 
     ${BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
     ${BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
