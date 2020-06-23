@@ -1,8 +1,8 @@
 {
-    "appName": "resty-gateway",
+    "appName": "ws-cloud-gateway",
     "env": "test",
     "etcd": {
-        "http_host": "http://192.168.41.47:2379",
+        "http_host": "http://127.0.0.1:2379",
         "data_prefix": "/my/cloud/"
     },
     "plugins": [
@@ -23,6 +23,11 @@
                     "name": "管理员"
                 }
             }
+        }
+    },
+    "tokens": {
+        "e09d6153f1c15395397be3639d144794": {
+            "desc": "系统默认 api token"
         }
     }
 }
