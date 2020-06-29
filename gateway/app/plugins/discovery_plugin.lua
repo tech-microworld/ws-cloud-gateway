@@ -17,12 +17,10 @@
 local ngx = ngx
 local log = require("app.core.log")
 local route_store = require("app.store.route_store")
-local tab_nkeys = require("table.nkeys")
 local discovery_stroe = require("app.store.discovery_stroe")
-local balancer = require "ngx.balancer"
-local resty_roundrobin = require "resty.roundrobin"
-local str_tils = require("app.utils.str_utils")
 local resp = require("app.core.response")
+local ngx_balancer = require ("ngx.balancer")
+local balancer = require("app.balancer")
 
 local _M = {
     name = "discovery",
@@ -42,24 +40,21 @@ function _M.do_in_rewrite(route)
     local service_name = route.service_name
     var.target_service_name = service_name
 
-    local service_nodes = discovery_stroe.get_service_nodes_cache(service_name)
+    local upstream = balancer.find(service_name)
 
-    if not service_nodes or tab_nkeys(service_nodes) < 1 then
+    if not upstream then
         log.error("can not find any service node")
         return resp.exit(ngx.HTTP_NOT_FOUND)
     end
 
-    ngx_ctx.upstream_server_list = service_nodes
+    ngx_ctx.upstream_server = upstream
 end
 
 function _M.do_in_balancer()
     local ngx_ctx = ngx.ctx
-    local server_list = ngx_ctx.upstream_server_list
-
-    log.info("server list: ", str_tils.table_to_string(server_list))
-    local rr_up = resty_roundrobin:new(server_list)
-    local server = rr_up:find()
-    balancer.set_current_peer(server)
+    local server = ngx_ctx.upstream_server
+    log.info("upstream server: ", server)
+    ngx_balancer.set_current_peer(ngx_ctx.upstream_server)
 end
 
 return _M

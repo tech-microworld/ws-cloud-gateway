@@ -21,9 +21,10 @@ local time = require("app.core.time")
 local ngx = ngx
 local timer_at = ngx.timer.at
 local ipairs = ipairs
+local pairs = pairs
 local etcd = require("app.core.etcd")
 local core_table = require("app.core.table")
-local service_cache = ngx.shared.discovery_cache
+local balancer = require("app.balancer")
 
 local _M = {}
 
@@ -41,13 +42,13 @@ local function service_node_etcd_key(key)
     return etcd_prefix .. key
 end
 
-local function get_key(service_name, upstream)
+local function create_key(service_name, upstream)
     return "/" .. service_name .. "/" .. upstream
 end
 
 local function parse_node(service)
     return {
-        key = get_key(service.service_name, service.upstream),
+        key = create_key(service.service_name, service.upstream),
         service_name = service.service_name,
         upstream = service.upstream,
         weight = service.weight,
@@ -58,15 +59,15 @@ end
 
 -- 服务节点是否存在
 local function is_exsit(service)
-    local key = get_key(service.service_name, service.upstream)
+    local key = create_key(service.service_name, service.upstream)
     local res, err = etcd.get(service_node_etcd_key(key))
     return not err and res.body.kvs and tab_nkeys(res.body.kvs) > 0
 end
 
 _M.is_exsit = is_exsit
 
--- 从 etcd 读取所有服务节点
-local function service_node_list()
+-- 从 etcd 读取所有服务节点列表
+local function query_service_node_list()
     local resp, err = etcd.readdir(etcd_prefix)
     if err then
         log.info("failed to query service list", err)
@@ -83,45 +84,44 @@ local function service_node_list()
     return nodes, nil
 end
 
-_M.service_node_list = service_node_list
+_M.query_service_node_list = query_service_node_list
 
--- 根据服务名查询节点列表
-local function get_service_nodes_cache(service_name)
-    local nodes = service_cache:get(service_name)
-    if not nodes then
+-- 从 etcd 读取所有服务节点 {service_name = node_list}
+local function query_services_nodes()
+    local list = query_service_node_list()
+    if not list and tab_nkeys(list) < 1 then
         return nil
     end
-    log.debug("get service nodes from cache: ", service_name, " - ", nodes)
-    return cjson.decode(nodes)
-end
 
-_M.get_service_nodes_cache = get_service_nodes_cache
+    local nodes = {}
+    for _, node in ipairs(list) do
+        if node.status ~= 1 then
+            goto CONTINUE
+        end
 
--- 删除缓存中的服务节点
-local function remove_node_cache(service_name, upstream)
-    local nodes = get_service_nodes_cache(service_name)
-    if nodes and tab_nkeys(nodes) > 0 then
-        nodes[upstream] = nil
-        service_cache:set(service_name, cjson.encode(nodes))
-        log.info("remove service node cache: ", service_name, "/", upstream)
+        local items = nodes[node.service_name] or {}
+        items[node.upstream] = node.weight
+        nodes[node.service_name] = items
+
+        ::CONTINUE::
     end
+    return nodes
 end
+
+_M.query_services_nodes = query_services_nodes
 
 -- 更新服务节点信息
-local function apply_service_node(node)
+local function apply_balancer(node)
     local service_name = node.service_name
     local service_upstream = node.upstream
+    local weight = node.weight
 
-    -- 删除缓存服务节点
+    -- 下线状态，删除缓存服务节点
     if node.status == 0 then
-        remove_node_cache(service_name, service_upstream)
+        balancer.delete(service_name, service_upstream)
         return
     end
-    log.info("cache srevice node: ", cjson.encode(node))
-    local weight = node.weight
-    local nodes = get_service_nodes_cache(service_name) or {}
-    nodes[service_upstream] = weight
-    service_cache:set(service_name, cjson.encode(nodes))
+    balancer.set(service_name, service_upstream, weight)
 end
 
 -- 从 etcd 删除服务节点
@@ -132,8 +132,8 @@ end
 
 _M.delete_etcd_node = delete_etcd_node
 
--- 保存服务节点到 etcd
-local function save_service_node(service)
+-- 设置服务节点到 etcd
+local function set_service_node(service)
     local old_key = service.key
     local payload = parse_node(service)
     local _, err
@@ -150,12 +150,10 @@ local function save_service_node(service)
         log.error("save service node error: ", err, " - ", cjson.encode(service))
         return err
     end
-    apply_service_node(service)
     return nil
 end
 
-_M.save_service_node = save_service_node
-
+_M.set_service_node = set_service_node
 
 -- 监听服务节点数据变更
 local function watch_services()
@@ -189,9 +187,9 @@ local function watch_services()
             for _, event in ipairs(chunk.result.events) do
                 local node = parse_node(event.kv.value)
                 if delete_type == event.type then
-                    remove_node_cache(node.service_name, node.upstream)
+                    balancer.delete(node.service_name, node.upstream)
                 else
-                    apply_service_node(node)
+                    apply_balancer(node)
                 end
             end
         end
@@ -205,15 +203,10 @@ local function load_services()
         return
     end
 
-    local nodes, err = service_node_list()
-    if err then
-        log.info("failed to load nodes", err)
-        return
-    end
-
+    local nodes = query_services_nodes()
     if nodes and tab_nkeys(nodes) > 0 then
-        for _, node in ipairs(nodes) do
-            apply_service_node(node)
+        for name, items in pairs(nodes) do
+            balancer.refresh(name, items)
         end
     else
         log.info("service nodes empty")

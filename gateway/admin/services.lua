@@ -23,7 +23,7 @@ local time = require("app.core.time")
 local discovery_stroe = require("app.store.discovery_stroe")
 
 local function list()
-    local services, err = discovery_stroe.service_node_list()
+    local services, err = discovery_stroe.query_service_node_list()
     if err then
         log.error("find service nodes error: ", err)
         resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "查询服务节点异常")
@@ -50,7 +50,7 @@ local function save()
         resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "服务节点已存在")
         return
     end
-    local _, err = discovery_stroe.save_service_node(service)
+    local _, err = discovery_stroe.set_service_node(service)
     if err then
         log.error("save service node error: ", err)
         resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, err)

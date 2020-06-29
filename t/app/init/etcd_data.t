@@ -125,7 +125,7 @@ location = /t {
             local nodes = cjson.decode(ngx.req.get_body_data())
             for _, node in ipairs(nodes) do
                 log.error("save node: ", cjson.encode(node))
-                discovery_stroe.save_service_node(node)
+                discovery_stroe.set_service_node(node)
             end
 
             check_res("ok", nil, true)
