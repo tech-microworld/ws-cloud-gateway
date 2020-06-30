@@ -45,7 +45,7 @@ echo
 
 curl http://127.0.0.1:10000/admin/services/save -H "X-Api-Token: ${token}" -X POST -d '
 {
-    "key": "/hello/127.0.0.1:1024",
+    "key": "/hello/127.0.0.1:8080",
     "service_name": "hello",
     "upstream": "127.0.0.1:8080",
     "weight": 1,
@@ -55,7 +55,7 @@ curl http://127.0.0.1:10000/admin/services/save -H "X-Api-Token: ${token}" -X PO
 echo
 
 mkdir -p out
-wrk -c16 -d20s http://127.0.0.1:10000/innerapi/hello > out/wrk.out
+wrk -c16 -d10s --latency http://127.0.0.1:10000/innerapi/hello > out/wrk.out
 
 nginx -p `pwd`/server -c conf/nginx.conf -s stop || exit 1
 echo 'benchmark end'
