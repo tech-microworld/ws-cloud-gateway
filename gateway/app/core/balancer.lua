@@ -19,15 +19,15 @@ local resty_roundrobin = require("resty.roundrobin")
 local resty_chash = require("resty.chash")
 local log = require("app.core.log")
 local str_utils = require("app.utils.str_utils")
+local ngx = ngx
+local upstream_type_cache = ngx.shared.upstream_type_cache
 
 local _M = {}
 
 local balancer_cache
-local upstream_type_cache
 
 do
-    balancer_cache = lrucache:new("balancer")
-    upstream_type_cache = lrucache:new("balancer.type")
+    balancer_cache = lrucache:new("balancer", {count = 1024, ttl = nil})
 end -- end do
 
 function _M.set_upstream_type(service_name, type)
@@ -100,7 +100,7 @@ end
 function _M.delete(service_name, upstream)
     local balancer_up = get(service_name)
     if balancer_up then
-        log.info("delete service balancer: ", service_name, ' - ', upstream)
+        log.info("delete service balancer: ", service_name, " - ", upstream)
         balancer_up:delete(upstream)
     end
 end

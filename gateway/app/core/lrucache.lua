@@ -18,6 +18,7 @@ local setmetatable = setmetatable
 local getmetatable = getmetatable
 local type = type
 local lrucache = require("resty.lrucache")
+local log = require("app.core.log")
 
 local DEFALUT_TTL = 5
 local DEFAULT_ITEMS_COUNT = 10
@@ -30,12 +31,13 @@ local mt = {__index = _M}
 local function set_by_create(self, key, create_val_fun, ...)
     local lru = self.lru
     local obj = create_val_fun(...)
+    local cached_obj
     if type(obj) == "table" then
-        lru:set(key, obj, self.ttl)
+        cached_obj = obj
     elseif obj ~= nil then
-        local cached_obj = setmetatable({val = obj}, lua_metatab)
-        lru:set(key, cached_obj, self.ttl)
+        cached_obj = setmetatable({val = obj}, lua_metatab)
     end
+    lru:set(key, cached_obj, self.ttl)
     return obj
 end
 
@@ -64,8 +66,8 @@ end
 _M.get = get
 
 function _M.fetch_cache(self, key, invalid_stale, create_val_fun, ...)
-    local obj = get(key, invalid_stale)
-    return obj or set_by_create(key, create_val_fun, ...)
+    local obj = get(self, key, invalid_stale)
+    return obj or set_by_create(self, key, create_val_fun, ...)
 end
 
 function _M.delete(self, key)
@@ -80,8 +82,9 @@ function _M.capacity(self)
     return self.lru:capacity()
 end
 
-function _M.get_keys(self, max_count, res)
-    return self.lru:get_keys(max_count, res)
+function _M.get_keys(self, max_count)
+    log.info("get keys: ", type(self.lru.get_keys))
+    return self.lru:get_keys(max_count)
 end
 
 function _M.flush_all(self)

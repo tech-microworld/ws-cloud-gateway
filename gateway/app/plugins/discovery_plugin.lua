@@ -20,7 +20,7 @@ local route_store = require("app.store.route_store")
 local discovery_stroe = require("app.store.discovery_stroe")
 local resp = require("app.core.response")
 local ngx_balancer = require ("ngx.balancer")
-local balancer = require("app.balancer")
+local balancer = require("app.core.balancer")
 
 local _M = {
     name = "discovery",

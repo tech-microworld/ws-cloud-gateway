@@ -40,10 +40,10 @@ __DATA__
         content_by_lua_block {
             local cjson = require "cjson"
             local log = require("app.core.log")
-            local route_store = require("app.store.route_store")
+            local router = require("app.core.router")
 
             local url = ngx.var.arg_url
-            local route = route_store.get_route_by_uri(url)
+            local route = router.match(url)
             check_res(route and  route.prefix or "", nil, true)
         }
     }

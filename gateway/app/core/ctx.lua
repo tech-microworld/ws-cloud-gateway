@@ -21,9 +21,9 @@ local call_utils = require("app.utils.call_utils")
 local pcall = pcall
 local pairs = pairs
 local ngx = ngx
-local route_store = require("app.store.route_store")
 local config = require("app.config")
 local tab_nkeys = require("table.nkeys")
+local router = require("app.core.router")
 
 local _M = {}
 
@@ -61,7 +61,7 @@ function _M.get_dispatcher()
     local ngx_ctx = ngx.ctx
     local ctx_dispatcher = ngx_ctx.dispatcher
     if not ctx_dispatcher then
-        local route = route_store.get_route_by_uri(ngx.var.uri)
+        local route = router.match(ngx.var.uri)
         if not route then
             route = {
                 prefix = ngx.var.uri,

@@ -24,7 +24,7 @@ local ipairs = ipairs
 local pairs = pairs
 local etcd = require("app.core.etcd")
 local core_table = require("app.core.table")
-local balancer = require("app.balancer")
+local balancer = require("app.core.balancer")
 
 local _M = {}
 
