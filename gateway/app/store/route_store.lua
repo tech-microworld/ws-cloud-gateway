@@ -14,8 +14,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-local ngx = ngx
-local timer_at = ngx.timer.at
+local error = error
 local ipairs = ipairs
 local etcd = require("app.core.etcd")
 local log = require("app.core.log")
@@ -24,8 +23,16 @@ local str_utils = require("app.utils.str_utils")
 local core_table = require("app.core.table")
 local time = require("app.core.time")
 local router = require("app.core.router")
+local timer = require("app.core.timer")
 
 local _M = {}
+
+local route_timer_lock
+local route_timer
+
+do
+    route_timer_lock = timer.new_lock()
+end -- end do
 
 local etcd_prefix = "routes"
 
@@ -115,13 +122,17 @@ end
 
 -- 初始化
 function _M.init()
-    if 0 ~= ngx.worker.id() then
-        log.info("worker id is not 0 and do nothing")
-        return
-    end
-    local ok, err = timer_at(0, refresh_router)
+    route_timer = timer.new(
+        {
+            name = "route.timer",
+            delay = 0,
+            callback = refresh_router,
+            lock = route_timer_lock
+        }
+    )
+    local ok, err = route_timer:once()
     if not ok then
-        log.error("failed to load routes: ", err)
+        error("failed to load routes: " .. err)
     end
 end
 

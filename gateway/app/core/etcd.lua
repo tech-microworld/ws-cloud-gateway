@@ -33,7 +33,7 @@ _M.get_prefix = get_prefix
 
 local function new()
     if not etcd_config then
-        return nil, nil, error("can not get etcd config")
+        error("can not get etcd config")
     end
 
     local etcd_connect_config = {
@@ -45,7 +45,7 @@ local function new()
     local prefix = etcd_config.data_prefix
     local etcd_cli, err = etcd.new(etcd_connect_config)
     if not etcd_cli then
-        return nil, nil, err
+        error("can not create etcd client")
     end
 
     return etcd_cli, prefix, err

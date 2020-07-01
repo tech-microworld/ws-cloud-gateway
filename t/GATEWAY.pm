@@ -54,6 +54,7 @@ _EOC_
 
     # 全局缓存定义
     lua_shared_dict upstream_type_cache 1m;
+    lua_shared_dict timer_lock 1m;
 
     #最大等待任务数
     lua_max_pending_timers 1024;
@@ -62,8 +63,8 @@ _EOC_
 
 
     #lua库依赖路径
-    lua_package_path "${app_home}/deps/share/lua/5.1/?.lua;${app_home}/deps/share/lua/5.1/?/init.lua;${app_home}/gateway/?.lua;${app_home}/gateway/?/init.lua;${app_home}/t/?.lua;;";
-    lua_package_cpath "${app_home}/deps/lib64/lua/5.1/?.so;${app_home}/deps/lib/lua/5.1/?.so;;";
+    lua_package_path "$app_home/deps/share/lua/5.1/?.lua;$app_home/deps/share/lua/5.1/?/init.lua;$app_home/gateway/?.lua;$app_home/gateway/?/init.lua;$app_home/t/?.lua;;";
+    lua_package_cpath "$app_home/deps/lib64/lua/5.1/?.so;$app_home/deps/lib/lua/5.1/?.so;;";
 
     #初始化脚本
     init_by_lua_block {

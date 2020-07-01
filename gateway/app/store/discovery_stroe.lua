@@ -14,17 +14,28 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-local cjson = require "cjson"
 local tab_nkeys = require("table.nkeys")
 local log = require("app.core.log")
 local time = require("app.core.time")
 local ngx = ngx
-local timer_at = ngx.timer.at
+local error = error
 local ipairs = ipairs
 local pairs = pairs
 local etcd = require("app.core.etcd")
 local core_table = require("app.core.table")
 local balancer = require("app.core.balancer")
+local timer = require("app.core.timer")
+local json = require("app.core.json")
+
+local discovery_timer_lock
+local discovery_timer
+local discovery_watcher_timer_lock
+local discovery_watcher_timer
+
+do
+    discovery_timer_lock = timer.new_lock()
+    discovery_watcher_timer_lock = timer.new_lock()
+end -- end do
 
 local _M = {}
 
@@ -32,7 +43,7 @@ local delete_type = "DELETE"
 local etcd_prefix = "discovery"
 
 local etcd_watch_opts = {
-    timeout = 60,
+    timeout = 3,
     prev_kv = true,
     start_revision = nil
 }
@@ -127,7 +138,10 @@ end
 -- 从 etcd 删除服务节点
 local function delete_etcd_node(key)
     local _, err = etcd.delete(service_node_etcd_key(key))
-    return err
+    if not err then
+        return false, err
+    end
+    return true, nil
 end
 
 _M.delete_etcd_node = delete_etcd_node
@@ -143,25 +157,20 @@ local function set_service_node(service)
     end
     if err then
         log.error("delete service node error: ", err, " - ", payload.key)
-        return err
+        return false, err
     end
     _, err = etcd.set(service_node_etcd_key(payload.key), payload)
     if err then
-        log.error("save service node error: ", err, " - ", cjson.encode(service))
-        return err
+        log.error("save service node error: ", err, " - ", json.delay_encode(service))
+        return false, err
     end
-    return nil
+    return true, nil
 end
 
 _M.set_service_node = set_service_node
 
 -- 监听服务节点数据变更
 local function watch_services()
-    if 0 ~= ngx.worker.id() then
-        log.debug("worker id is not 0 and do nothing")
-        return
-    end
-
     log.info("watch start_revision: " .. etcd_watch_opts.start_revision)
     local chunk_fun, err = etcd.watchdir(etcd_prefix, etcd_watch_opts)
 
@@ -174,14 +183,9 @@ local function watch_services()
         chunk, err = chunk_fun()
         if not chunk then
             log.error("chunk err: ", err)
-            local ok
-            ok, err = timer_at(0, watch_services)
-            if not ok then
-                log.error("failed to watch services: ", err)
-            end
             break
         end
-        log.info("watch result: ", cjson.encode(chunk.result))
+        log.info("watch result: ", json.delay_encode(chunk.result))
         etcd_watch_opts.start_revision = chunk.result.header.revision + 1
         if chunk.result.events then
             for _, event in ipairs(chunk.result.events) do
@@ -216,13 +220,31 @@ end
 -- etcd初始化
 local function init_discovery()
     load_services()
-    watch_services()
+    discovery_watcher_timer:every()
 end
 
 function _M.init()
-    local ok, err = timer_at(0, init_discovery)
+    discovery_timer =
+        timer.new(
+        {
+            name = "discovery.timer",
+            delay = 0,
+            callback = init_discovery,
+            lock = discovery_timer_lock
+        }
+    )
+    discovery_watcher_timer =
+        timer.new(
+        {
+            name = "discovery.watcher.timer",
+            delay = etcd_watch_opts.timeout + 0.5,
+            callback = watch_services,
+            lock = discovery_watcher_timer_lock
+        }
+    )
+    local ok, err = discovery_timer:once()
     if not ok then
-        log.error("failed to init discovery: ", err)
+        error("failed to init discovery: " .. err)
     end
 end
 

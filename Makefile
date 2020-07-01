@@ -44,8 +44,7 @@ endif
 ### test:				执行测试用例
 .PHONY: test
 test:
-	TEST_NGINX_LOG_LEVEL=info \
-	prove -I./ -r -s t/
+	@prove -I./ -r -s t/
 
 test-store:
 	@prove -I./ -r -s t/app/store
