@@ -44,7 +44,8 @@ endif
 ### test:				执行测试用例
 .PHONY: test
 test:
-	@prove -I./ -r -s t
+	TEST_NGINX_LOG_LEVEL=info \
+	prove -I./ -r -s t/
 
 test-store:
 	@prove -I./ -r -s t/app/store
@@ -112,9 +113,9 @@ ifeq ("$(wildcard .travis/openresty-systemtap-toolkit/fix-lua-bt)", "")
 endif
 
 ### benchmark-wrk:			wrk 压力测试
-benchmark-wrk: benchmark-tool		
+benchmark-wrk: benchmark-tool
 	@cd benchmark && sh run-wrk.sh
 
 ### benchmark-flame:			绘制火焰图
-benchmark-flame: benchmark-tool		
+benchmark-flame: benchmark-tool
 	@cd benchmark && sh flame.sh

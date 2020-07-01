@@ -14,70 +14,49 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-local pairs = pairs
 local ipairs = ipairs
 local log = require("app.core.log")
 local core_table = require("app.core.table")
 local lrucache = require("app.core.lrucache")
 local radixtree = require("resty.radixtree")
-local str_utils = require("app.utils.str_utils")
+local json = require("app.core.json")
 
 local _M = {}
 
-local router_cache
 local radix_cache
+local rx_key = "rx"
 
 do
-    router_cache = lrucache:new("router.routes", {count = 100, ttl = nil})
-    radix_cache = lrucache:new("router.radix", {count = 3, ttl = 60 * 10})
+    radix_cache = lrucache:new("router.radix", {count = 1})
 end -- end do
 
-local function get_all_routes()
-    local keys = router_cache:get_keys(0)
-    local routes = {}
-    for _, v in ipairs(keys) do
-        core_table.insert(routes, router_cache:get(v))
-    end
-    return routes
-end
-
-local function create_rx()
-    local routes = get_all_routes()
+local function create_rx(routes)
+    log.debug("routes: ", json.delay_encode(routes))
     local mapping = {}
-    for path, route in pairs(routes) do
+    for _, route in ipairs(routes) do
         core_table.insert(
             mapping,
             {
-                paths = {path},
+                paths = {route.prefix},
                 metadata = route
             }
         )
     end
-    return radixtree:new(mapping)
+    log.debug("mapping: ", json.delay_encode(mapping))
+    return radixtree.new(mapping)
 end
 
 -- 匹配路由
 function _M.match(url)
-    log.info("match route url: ", url)
-    local rx = radix_cache:fetch_cache("rx", true, create_rx)
+    local rx = radix_cache:get(rx_key, true)
     local route = rx:match(url)
-    log.info("match route: ", str_utils.table_to_string(route))
-    return route
-end
-
-local function create_route(route)
-    log.info("create route: ", str_utils.table_to_string(route))
+    log.info("match route: ", json.delay_encode({url, route}))
     return route
 end
 
 -- 注册路由
-function _M.register(path, route)
-    router_cache:set_by_create(path, create_route, route)
-end
-
--- 删除路由
-function _M.delete(path)
-    router_cache:delete(path)
+function _M.refresh(routes)
+    return radix_cache:set_by_create(rx_key, create_rx, routes)
 end
 
 return _M

@@ -17,7 +17,6 @@
 local ngx = ngx
 local timer_at = ngx.timer.at
 local ipairs = ipairs
-local pairs = pairs
 local etcd = require("app.core.etcd")
 local log = require("app.core.log")
 local tab_nkeys = require("table.nkeys")
@@ -63,17 +62,27 @@ end
 
 _M.query_list = query_list
 
-local function query_routes()
+local function query_enable_list()
     local list, err = query_list()
-    if not list and tab_nkeys(list) < 1  then
+    if not list and tab_nkeys(list) < 1 then
         return nil, err
     end
 
     local routes = {}
     for _, route in ipairs(list) do
-        routes[route.prefix] = route
+        if route.status == 1 then
+            core_table.insert(routes, route)
+        end
     end
     return routes, nil
+end
+
+local function refresh_router()
+    local routes, err = query_enable_list()
+    if not routes and tab_nkeys(routes) < 1 then
+        return nil, err
+    end
+    router.refresh(routes)
 end
 
 -- 删除路由
@@ -82,7 +91,7 @@ local function remove_route(key)
     local etcd_key = get_etcd_key(key)
     local _, err = etcd.delete(etcd_key)
     if not err then
-        router.delete(key)
+        refresh_router()
     end
     return err
 end
@@ -100,29 +109,8 @@ function _M.save_route(route)
         log.error("save route error: ", err)
         return err
     end
-    if route.status == 1 then
-        router.register(route.prefix, route)
-    else
-        router.delete(key)
-    end
+    refresh_router()
     return nil
-end
-
-local function load_routes()
-    local routes, err = query_routes()
-    if err then
-        log.error("load routes fail: ", err)
-        return
-    end
-    for _, route in pairs(routes) do
-        if route.status ~= 1 then
-            goto CONTINUE
-        end
-
-        router.register(route.prefix, route)
-
-        ::CONTINUE::
-    end
 end
 
 -- 初始化
@@ -131,7 +119,7 @@ function _M.init()
         log.info("worker id is not 0 and do nothing")
         return
     end
-    local ok, err = timer_at(0, load_routes)
+    local ok, err = timer_at(0, refresh_router)
     if not ok then
         log.error("failed to load routes: ", err)
     end

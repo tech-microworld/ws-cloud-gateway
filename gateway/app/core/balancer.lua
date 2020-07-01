@@ -18,7 +18,7 @@ local lrucache = require("app.core.lrucache")
 local resty_roundrobin = require("resty.roundrobin")
 local resty_chash = require("resty.chash")
 local log = require("app.core.log")
-local str_utils = require("app.utils.str_utils")
+local json = require("app.core.json")
 local ngx = ngx
 local upstream_type_cache = ngx.shared.upstream_type_cache
 
@@ -57,7 +57,7 @@ end
 -- 创建 balancer 对象并缓存
 local function refresh(service_name, nodes)
     local type = get_upstream_type(service_name)
-    log.info("refresh balancer: ", service_name, " ", type, " ", str_utils.table_to_string(nodes))
+    log.info("refresh balancer: ", json.delay_encode({service_name, type, nodes}))
     return balancer_cache:set_by_create(service_name, _create, type, nodes)
 end
 

@@ -64,7 +64,7 @@ __DATA__
 [
     'POST /save
     {
-        "prefix": "/openapi/demo",
+        "prefix": "/openapi/demo/*",
         "status": 1,
         "service_name": "demo",
         "protocol": "http",
@@ -79,8 +79,8 @@ __DATA__
     'GET /query?url=/openapi/demo/info',
     'POST /save
     {
-        "key": "/openapi/demo",
-        "prefix": "/openapi/demo",
+        "key": "/openapi/demo/*",
+        "prefix": "/openapi/demo/*",
         "status": 0,
         "service_name": "demo",
         "protocol": "http",
@@ -93,13 +93,13 @@ __DATA__
     }
     ',
     'GET /query?url=/openapi/demo/info',
-    'DELETE /delete?prefix=/openapi/demo'
+    'DELETE /delete?prefix=/openapi/demo/*'
 ]
 
 --- response_body eval
 [
     "ok\n",
-    "/openapi/demo\n",
+    "/openapi/demo/*\n",
     "ok\n",
     "\n",
     "ok\n"

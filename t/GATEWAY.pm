@@ -42,6 +42,8 @@ _EOC_
 
     my $http_config = $block->http_config // <<_EOC_;
 
+    error_log logs/error.log debug;
+
     include ${app_home}/conf/mime.types;
 
     sendfile        on;
@@ -51,8 +53,7 @@ _EOC_
     lua_regex_match_limit 100000;
 
     # 全局缓存定义
-    lua_shared_dict discovery_cache 10m;
-    lua_shared_dict routes_cache 10m;
+    lua_shared_dict upstream_type_cache 1m;
 
     #最大等待任务数
     lua_max_pending_timers 1024;

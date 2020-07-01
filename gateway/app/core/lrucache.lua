@@ -20,7 +20,7 @@ local type = type
 local lrucache = require("resty.lrucache")
 local log = require("app.core.log")
 
-local DEFALUT_TTL = 5
+local DEFALUT_TTL = -1
 local DEFAULT_ITEMS_COUNT = 10
 local lua_metatab = {}
 
@@ -37,7 +37,12 @@ local function set_by_create(self, key, create_val_fun, ...)
     elseif obj ~= nil then
         cached_obj = setmetatable({val = obj}, lua_metatab)
     end
-    lru:set(key, cached_obj, self.ttl)
+    local ttl = self.ttl
+    if ttl < 0 then
+        lru:set(key, cached_obj)
+    else
+        lru:set(key, cached_obj, self.ttl)
+    end
     return obj
 end
 

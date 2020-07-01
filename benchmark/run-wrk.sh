@@ -24,10 +24,10 @@ token=e09d6153f1c15395397be3639d144794
 
 curl http://127.0.0.1:10000/admin/routes/save -H "X-Api-Token: ${token}" -X POST -d '
 {
-    "key": "/innerapi/hello",
+    "key": "/innerapi/hello/**",
     "protocol": "http",
     "remark": "",
-    "prefix": "/innerapi/hello",
+    "prefix": "/innerapi/hello/**",
     "service_name": "hello",
     "status": 1,
     "plugins": [
@@ -55,7 +55,7 @@ curl http://127.0.0.1:10000/admin/services/save -H "X-Api-Token: ${token}" -X PO
 echo
 
 mkdir -p out
-wrk -c16 -d10s --latency http://127.0.0.1:10000/innerapi/hello > out/wrk.out
+wrk -d 5 -c 16 --latency http://127.0.0.1:10000/innerapi/hello > out/wrk.out
 
 nginx -p `pwd`/server -c conf/nginx.conf -s stop || exit 1
 echo 'benchmark end'

@@ -38,12 +38,12 @@ function _M.new(self, opts)
     return setmetatable(self, mt)
 end
 
-function _M.once(use_lock)
-    -- body
+function _M.once(self, use_lock)
+    timer_at(self.delay, self.callback)
 end
 
-function _M.every(use_lock)
-    -- body
+function _M.every(self, use_lock)
+    timer_every(self.delay, self.callback)
 end
 
 return _M
