@@ -52,7 +52,7 @@ local balancer_types = {
 -- 刷新服务节点缓存
 local function refresh(service_name, nodes)
     local type = get_upstream_type(service_name)
-    log.info("refresh balancer: ", json.delay_encode({service_name, type, nodes}))
+    log.error("refresh balancer: ", json.delay_encode({service_name, type, nodes}))
     local balancer_up = balancer_types[type](nodes)
     return balancer_cache:set(service_name, balancer_up)
 end
@@ -66,7 +66,6 @@ end
 
 -- 更新服务节点
 function _M.set(service_name, upstream, weight)
-    log.info("set balancer: ", service_name, " ", upstream, " ", weight)
     weight = weight or 1
     local balancer_up = get(service_name)
     if not balancer_up then
@@ -79,6 +78,7 @@ function _M.set(service_name, upstream, weight)
         refresh(service_name, nodes)
         return
     end
+    log.error("set service balancer: ", service_name, ", ", upstream, ", ", weight)
     balancer_up:set(upstream, weight or 1)
 end
 
@@ -86,7 +86,7 @@ end
 function _M.find(service_name)
     local balancer_up = get(service_name)
     if not balancer_up then
-        log.info("can not found service balancer: ", service_name)
+        log.error("can not found service balancer: ", service_name)
         return nil
     end
     return balancer_up:find()
@@ -96,7 +96,7 @@ end
 function _M.delete(service_name, upstream)
     local balancer_up = get(service_name)
     if balancer_up then
-        log.info("delete service balancer: ", service_name, " - ", upstream)
+        log.error("remove service balancer: ", service_name, " - ", upstream)
         balancer_up:delete(upstream)
     end
 end
