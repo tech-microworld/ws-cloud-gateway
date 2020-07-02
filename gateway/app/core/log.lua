@@ -20,6 +20,13 @@ local ngx = ngx
 local ngx_log = ngx.log
 local require = require
 local setmetatable = setmetatable
+local tostring = tostring
+local str_utils = require("app.utils.str_utils")
+local worker_id = ngx.worker.id
+
+local function worker_id_log()
+    return str_utils.join_str("", "worker[", tostring(worker_id()), "] - ")
+end
 
 local _M = {version = 0.4}
 
@@ -78,7 +85,7 @@ setmetatable(
                 method = do_nothing
             else
                 method = function(...)
-                    return ngx_log(log_level, ...)
+                    return ngx_log(log_level, worker_id_log(), ...)
                 end
             end
 

@@ -27,15 +27,8 @@ local balancer = require("app.core.balancer")
 local timer = require("app.core.timer")
 local json = require("app.core.json")
 
-local discovery_timer_lock
 local discovery_timer
-local discovery_watcher_timer_lock
 local discovery_watcher_timer
-
-do
-    discovery_timer_lock = timer.new_lock()
-    discovery_watcher_timer_lock = timer.new_lock()
-end -- end do
 
 local _M = {}
 
@@ -43,7 +36,7 @@ local delete_type = "DELETE"
 local etcd_prefix = "discovery"
 
 local etcd_watch_opts = {
-    timeout = 3,
+    timeout = 10,
     prev_kv = true,
     start_revision = nil
 }
@@ -53,8 +46,12 @@ local function service_node_etcd_key(key)
     return etcd_prefix .. key
 end
 
+local function create_service_key(service_name)
+    return "/" .. service_name
+end
+
 local function create_key(service_name, upstream)
-    return "/" .. service_name .. "/" .. upstream
+    return create_service_key(service_name) .. "/" .. upstream
 end
 
 local function parse_node(service)
@@ -77,11 +74,11 @@ end
 
 _M.is_exsit = is_exsit
 
--- 从 etcd 读取所有服务节点列表
-local function query_service_node_list()
-    local resp, err = etcd.readdir(etcd_prefix)
+local function find_by_prefix(prefix)
+    prefix = prefix and service_node_etcd_key(prefix) or etcd_prefix
+    local resp, err = etcd.readdir(prefix)
     if err then
-        log.info("failed to query service list", err)
+        log.info("failed to query service list, key: ", prefix, ", err: ", err)
         return nil, err
     end
 
@@ -93,6 +90,16 @@ local function query_service_node_list()
         end
     end
     return nodes, nil
+end
+
+-- 通过服务名查询节点信息
+function _M.find_nodes_by_name(service_name)
+    return find_by_prefix(create_service_key(service_name))
+end
+
+-- 从 etcd 读取所有服务节点列表
+local function query_service_node_list()
+    return find_by_prefix()
 end
 
 _M.query_service_node_list = query_service_node_list
@@ -202,11 +209,6 @@ end
 
 -- 加载服务节点注册信息
 local function load_services()
-    if 0 ~= ngx.worker.id() then
-        log.info("worker id is not 0 and do nothing")
-        return
-    end
-
     local nodes = query_services_nodes()
     if nodes and tab_nkeys(nodes) > 0 then
         for name, items in pairs(nodes) do
@@ -220,27 +222,16 @@ end
 -- etcd初始化
 local function init_discovery()
     load_services()
-    discovery_watcher_timer:every()
+    discovery_watcher_timer:recursion()
 end
 
 function _M.init()
-    discovery_timer =
-        timer.new(
-        {
-            name = "discovery.timer",
-            delay = 0,
-            callback = init_discovery,
-            lock = discovery_timer_lock
-        }
-    )
+    discovery_timer = timer.new("discovery.timer", init_discovery, {delay = 0, use_lock = true})
     discovery_watcher_timer =
         timer.new(
-        {
-            name = "discovery.watcher.timer",
-            delay = etcd_watch_opts.timeout + 0.5,
-            callback = watch_services,
-            lock = discovery_watcher_timer_lock
-        }
+        "discovery.watcher.timer",
+        watch_services,
+        {delay = 0, sleep_time = etcd_watch_opts.timeout, use_lock = true}
     )
     local ok, err = discovery_timer:once()
     if not ok then

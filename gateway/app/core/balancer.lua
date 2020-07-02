@@ -14,12 +14,12 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
+local ngx = ngx
 local lrucache = require("app.core.lrucache")
 local resty_roundrobin = require("resty.roundrobin")
 local resty_chash = require("resty.chash")
 local log = require("app.core.log")
 local json = require("app.core.json")
-local ngx = ngx
 local upstream_type_cache = ngx.shared.upstream_type_cache
 
 local _M = {}
@@ -27,7 +27,7 @@ local _M = {}
 local balancer_cache
 
 do
-    balancer_cache = lrucache:new("balancer", {count = 1024, ttl = nil})
+    balancer_cache = lrucache.new({count = 1024, ttl = 60 * 5})
 end -- end do
 
 function _M.set_upstream_type(service_name, type)
@@ -49,16 +49,12 @@ local balancer_types = {
     end
 }
 
-local _create = function(type, nodes)
-    local balancer_up = balancer_types[type](nodes)
-    return balancer_up
-end
-
--- 创建 balancer 对象并缓存
+-- 刷新服务节点缓存
 local function refresh(service_name, nodes)
     local type = get_upstream_type(service_name)
     log.info("refresh balancer: ", json.delay_encode({service_name, type, nodes}))
-    return balancer_cache:set_by_create(service_name, _create, type, nodes)
+    local balancer_up = balancer_types[type](nodes)
+    return balancer_cache:set(service_name, balancer_up)
 end
 
 _M.refresh = refresh
@@ -68,7 +64,7 @@ local function get(service_name)
     return balancer_cache:get(service_name)
 end
 
--- 增加服务节点
+-- 更新服务节点
 function _M.set(service_name, upstream, weight)
     log.info("set balancer: ", service_name, " ", upstream, " ", weight)
     weight = weight or 1

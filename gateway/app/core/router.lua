@@ -24,10 +24,10 @@ local json = require("app.core.json")
 local _M = {}
 
 local radix_cache
-local rx_key = "rx"
+local rx_key = "router.rx"
 
 do
-    radix_cache = lrucache:new("router.radix", {count = 1})
+    radix_cache = lrucache.new({count = 5})
 end -- end do
 
 local function create_rx(routes)
@@ -42,13 +42,13 @@ local function create_rx(routes)
             }
         )
     end
-    log.debug("mapping: ", json.delay_encode(mapping))
+    log.info("mapping: ", json.delay_encode(mapping))
     return radixtree.new(mapping)
 end
 
 -- 匹配路由
 function _M.match(url)
-    local rx = radix_cache:get(rx_key, true)
+    local rx = radix_cache:get(rx_key, false)
     local route = rx:match(url)
     log.info("match route: ", json.delay_encode({url, route}))
     return route
@@ -56,7 +56,8 @@ end
 
 -- 注册路由
 function _M.refresh(routes)
-    return radix_cache:set_by_create(rx_key, create_rx, routes)
+    local rx = create_rx(routes)
+    radix_cache:set(rx_key, rx)
 end
 
 return _M

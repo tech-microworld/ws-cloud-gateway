@@ -27,12 +27,7 @@ local timer = require("app.core.timer")
 
 local _M = {}
 
-local route_timer_lock
 local route_timer
-
-do
-    route_timer_lock = timer.new_lock()
-end -- end do
 
 local etcd_prefix = "routes"
 
@@ -84,6 +79,8 @@ local function query_enable_list()
     return routes, nil
 end
 
+_M.query_enable_list = query_enable_list
+
 local function refresh_router()
     local routes, err = query_enable_list()
     if not routes and tab_nkeys(routes) < 1 then
@@ -94,7 +91,7 @@ end
 
 -- 删除路由
 local function remove_route(key)
-    log.alert("remove route: ", key)
+    log.error("remove route: ", key)
     local etcd_key = get_etcd_key(key)
     local _, err = etcd.delete(etcd_key)
     if not err then
@@ -122,14 +119,7 @@ end
 
 -- 初始化
 function _M.init()
-    route_timer = timer.new(
-        {
-            name = "route.timer",
-            delay = 0,
-            callback = refresh_router,
-            lock = route_timer_lock
-        }
-    )
+    route_timer = timer.new("route.timer", refresh_router, {delay = 0, use_lock = true})
     local ok, err = route_timer:once()
     if not ok then
         error("failed to load routes: " .. err)
