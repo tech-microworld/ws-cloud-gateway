@@ -17,7 +17,6 @@
 local tab_nkeys = require("table.nkeys")
 local log = require("app.core.log")
 local time = require("app.core.time")
-local ngx = ngx
 local error = error
 local ipairs = ipairs
 local pairs = pairs
@@ -228,11 +227,7 @@ end
 function _M.init()
     discovery_timer = timer.new("discovery.timer", init_discovery, {delay = 0, use_lock = true})
     discovery_watcher_timer =
-        timer.new(
-        "discovery.watcher.timer",
-        watch_services,
-        {delay = 0, sleep_time = etcd_watch_opts.timeout, use_lock = true}
-    )
+        timer.new("discovery.watcher.timer", watch_services, {delay = 0, fail_sleep_time = 3, use_lock = true})
     local ok, err = discovery_timer:once()
     if not ok then
         error("failed to init discovery: " .. err)

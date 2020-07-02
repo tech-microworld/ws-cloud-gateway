@@ -57,7 +57,7 @@ function _M.new(name, callback, opts)
         callback = callback,
         delay = opts.delay or 0.5,
         lock = lock,
-        sleep_time = opts.sleep_time or 3
+        fail_sleep_time = opts.fail_sleep_time or 0
     }
     return setmetatable(obj, mt)
 end
@@ -75,8 +75,8 @@ local function callback_fun(self)
             local elapsed, err = lock:lock(name)
             if not elapsed then
                 log.info("timer[", name, "]failed to acquire the lock: ", err)
-                if self.sleep_time > 0 then
-                    sleep(self.sleep_time)
+                if self.fail_sleep_time > 0 then
+                    sleep(self.fail_sleep_time)
                 end
                 return
             end
