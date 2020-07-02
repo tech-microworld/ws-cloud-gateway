@@ -14,16 +14,20 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-local cjson = require "cjson"
 local tab_nkeys = require("table.nkeys")
 local log = require("app.core.log")
 local time = require("app.core.time")
-local ngx = ngx
-local timer_at = ngx.timer.at
+local error = error
 local ipairs = ipairs
+local pairs = pairs
 local etcd = require("app.core.etcd")
 local core_table = require("app.core.table")
-local service_cache = ngx.shared.discovery_cache
+local balancer = require("app.core.balancer")
+local timer = require("app.core.timer")
+local json = require("app.core.json")
+
+local discovery_timer
+local discovery_watcher_timer
 
 local _M = {}
 
@@ -31,7 +35,7 @@ local delete_type = "DELETE"
 local etcd_prefix = "discovery"
 
 local etcd_watch_opts = {
-    timeout = 60,
+    timeout = 10,
     prev_kv = true,
     start_revision = nil
 }
@@ -41,13 +45,17 @@ local function service_node_etcd_key(key)
     return etcd_prefix .. key
 end
 
-local function get_key(service_name, upstream)
-    return "/" .. service_name .. "/" .. upstream
+local function create_service_key(service_name)
+    return "/" .. service_name
+end
+
+local function create_key(service_name, upstream)
+    return create_service_key(service_name) .. "/" .. upstream
 end
 
 local function parse_node(service)
     return {
-        key = get_key(service.service_name, service.upstream),
+        key = create_key(service.service_name, service.upstream),
         service_name = service.service_name,
         upstream = service.upstream,
         weight = service.weight,
@@ -58,18 +66,18 @@ end
 
 -- 服务节点是否存在
 local function is_exsit(service)
-    local key = get_key(service.service_name, service.upstream)
+    local key = create_key(service.service_name, service.upstream)
     local res, err = etcd.get(service_node_etcd_key(key))
     return not err and res.body.kvs and tab_nkeys(res.body.kvs) > 0
 end
 
 _M.is_exsit = is_exsit
 
--- 从 etcd 读取所有服务节点
-local function service_node_list()
-    local resp, err = etcd.readdir(etcd_prefix)
+local function find_by_prefix(prefix)
+    prefix = prefix and service_node_etcd_key(prefix) or etcd_prefix
+    local resp, err = etcd.readdir(prefix)
     if err then
-        log.info("failed to query service list", err)
+        log.info("failed to query service list, key: ", prefix, ", err: ", err)
         return nil, err
     end
 
@@ -83,57 +91,69 @@ local function service_node_list()
     return nodes, nil
 end
 
-_M.service_node_list = service_node_list
+-- 通过服务名查询节点信息
+function _M.find_nodes_by_name(service_name)
+    return find_by_prefix(create_service_key(service_name))
+end
 
--- 根据服务名查询节点列表
-local function get_service_nodes_cache(service_name)
-    local nodes = service_cache:get(service_name)
-    if not nodes then
+-- 从 etcd 读取所有服务节点列表
+local function query_service_node_list()
+    return find_by_prefix()
+end
+
+_M.query_service_node_list = query_service_node_list
+
+-- 从 etcd 读取所有服务节点 {service_name = node_list}
+local function query_services_nodes()
+    local list = query_service_node_list()
+    if not list and tab_nkeys(list) < 1 then
         return nil
     end
-    log.debug("get service nodes from cache: ", service_name, " - ", nodes)
-    return cjson.decode(nodes)
-end
 
-_M.get_service_nodes_cache = get_service_nodes_cache
+    local nodes = {}
+    for _, node in ipairs(list) do
+        if node.status ~= 1 then
+            goto CONTINUE
+        end
 
--- 删除缓存中的服务节点
-local function remove_node_cache(service_name, upstream)
-    local nodes = get_service_nodes_cache(service_name)
-    if nodes and tab_nkeys(nodes) > 0 then
-        nodes[upstream] = nil
-        service_cache:set(service_name, cjson.encode(nodes))
-        log.info("remove service node cache: ", service_name, "/", upstream)
+        local items = nodes[node.service_name] or {}
+        items[node.upstream] = node.weight
+        nodes[node.service_name] = items
+
+        ::CONTINUE::
     end
+    return nodes
 end
+
+_M.query_services_nodes = query_services_nodes
 
 -- 更新服务节点信息
-local function apply_service_node(node)
+local function apply_balancer(node)
     local service_name = node.service_name
     local service_upstream = node.upstream
+    local weight = node.weight
 
-    -- 删除缓存服务节点
+    -- 下线状态，删除缓存服务节点
     if node.status == 0 then
-        remove_node_cache(service_name, service_upstream)
+        balancer.delete(service_name, service_upstream)
         return
     end
-    log.info("cache srevice node: ", cjson.encode(node))
-    local weight = node.weight
-    local nodes = get_service_nodes_cache(service_name) or {}
-    nodes[service_upstream] = weight
-    service_cache:set(service_name, cjson.encode(nodes))
+    balancer.set(service_name, service_upstream, weight)
 end
 
 -- 从 etcd 删除服务节点
 local function delete_etcd_node(key)
     local _, err = etcd.delete(service_node_etcd_key(key))
-    return err
+    if not err then
+        return false, err
+    end
+    return true, nil
 end
 
 _M.delete_etcd_node = delete_etcd_node
 
--- 保存服务节点到 etcd
-local function save_service_node(service)
+-- 设置服务节点到 etcd
+local function set_service_node(service)
     local old_key = service.key
     local payload = parse_node(service)
     local _, err
@@ -143,27 +163,20 @@ local function save_service_node(service)
     end
     if err then
         log.error("delete service node error: ", err, " - ", payload.key)
-        return err
+        return false, err
     end
     _, err = etcd.set(service_node_etcd_key(payload.key), payload)
     if err then
-        log.error("save service node error: ", err, " - ", cjson.encode(service))
-        return err
+        log.error("save service node error: ", err, " - ", json.delay_encode(service))
+        return false, err
     end
-    apply_service_node(service)
-    return nil
+    return true, nil
 end
 
-_M.save_service_node = save_service_node
-
+_M.set_service_node = set_service_node
 
 -- 监听服务节点数据变更
 local function watch_services()
-    if 0 ~= ngx.worker.id() then
-        log.debug("worker id is not 0 and do nothing")
-        return
-    end
-
     log.info("watch start_revision: " .. etcd_watch_opts.start_revision)
     local chunk_fun, err = etcd.watchdir(etcd_prefix, etcd_watch_opts)
 
@@ -176,22 +189,17 @@ local function watch_services()
         chunk, err = chunk_fun()
         if not chunk then
             log.error("chunk err: ", err)
-            local ok
-            ok, err = timer_at(0, watch_services)
-            if not ok then
-                log.error("failed to watch services: ", err)
-            end
             break
         end
-        log.info("watch result: ", cjson.encode(chunk.result))
+        log.info("watch result: ", json.delay_encode(chunk.result))
         etcd_watch_opts.start_revision = chunk.result.header.revision + 1
         if chunk.result.events then
             for _, event in ipairs(chunk.result.events) do
                 local node = parse_node(event.kv.value)
                 if delete_type == event.type then
-                    remove_node_cache(node.service_name, node.upstream)
+                    balancer.delete(node.service_name, node.upstream)
                 else
-                    apply_service_node(node)
+                    apply_balancer(node)
                 end
             end
         end
@@ -200,20 +208,10 @@ end
 
 -- 加载服务节点注册信息
 local function load_services()
-    if 0 ~= ngx.worker.id() then
-        log.info("worker id is not 0 and do nothing")
-        return
-    end
-
-    local nodes, err = service_node_list()
-    if err then
-        log.info("failed to load nodes", err)
-        return
-    end
-
+    local nodes = query_services_nodes()
     if nodes and tab_nkeys(nodes) > 0 then
-        for _, node in ipairs(nodes) do
-            apply_service_node(node)
+        for name, items in pairs(nodes) do
+            balancer.refresh(name, items)
         end
     else
         log.info("service nodes empty")
@@ -223,13 +221,16 @@ end
 -- etcd初始化
 local function init_discovery()
     load_services()
-    watch_services()
+    discovery_watcher_timer:recursion()
 end
 
 function _M.init()
-    local ok, err = timer_at(0, init_discovery)
+    discovery_timer = timer.new("discovery.timer", init_discovery, {delay = 0, use_lock = true})
+    discovery_watcher_timer =
+        timer.new("discovery.watcher.timer", watch_services, {delay = 0, fail_sleep_time = 3, use_lock = true})
+    local ok, err = discovery_timer:once()
     if not ok then
-        log.error("failed to init discovery: ", err)
+        error("failed to init discovery: " .. err)
     end
 end
 

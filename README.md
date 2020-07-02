@@ -23,6 +23,35 @@
 5. 无需重启服务，可实时修改参数配置
 6. 支持控制面板管理
 
+## 性能测试
+
+travis 自动化构建服务器测试，开2个worker进程，QPS: 23459.84，平均延迟: 0.7毫秒
+
+```bash
+# wrk 测试
+$ ./bin/travis-runner.sh after_success
++case_opt=after_success
++shift
++case ${case_opt} in
++after_success
++cat benchmark/out/wrk.out
+Running 5s test @ http://127.0.0.1:10000/innerapi/hello
+  2 threads and 16 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency   719.30us  544.56us  13.10ms   79.90%
+    Req/Sec    11.78k     1.38k   15.45k    72.55%
+  Latency Distribution
+     50%  693.00us
+     75%    0.92ms
+     90%    1.29ms
+     99%    2.23ms
+  119636 requests in 5.10s, 35.25MB read
+  Non-2xx or 3xx responses: 119636
+Requests/sec:  23459.84
+Transfer/sec:      6.91MB
+```
+
+
 ## 整体架构
 
 ![整体架构](./doc/img/resty-gateway.jpg)

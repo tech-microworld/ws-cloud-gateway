@@ -40,7 +40,7 @@ location = /t {
 [
     'POST /t
     {
-        "prefix": "/openapi/demo1",
+        "prefix": "/openapi/demo1/*",
         "status": 1,
         "service_name": "demo1",
         "protocol": "http",
@@ -57,7 +57,7 @@ location = /t {
     ',
     'POST /t
     {
-        "prefix": "/innerapi/demo1",
+        "prefix": "/innerapi/demo1/*",
         "status": 1,
         "service_name": "demo1",
         "protocol": "http",
@@ -74,7 +74,7 @@ location = /t {
     ',
     'POST /t
     {
-        "prefix": "/openapi/demo2",
+        "prefix": "/openapi/demo2/*",
         "status": 1,
         "service_name": "demo2",
         "protocol": "http",
@@ -88,7 +88,7 @@ location = /t {
     ',
     'POST /t
     {
-        "prefix": "/hello.GreeterService",
+        "prefix": "/hello.*",
         "status": 1,
         "service_name": "grpc-demo",
         "protocol": "grpc",
@@ -101,7 +101,7 @@ location = /t {
     }
     '
 
-    
+
 ]
 
 --- response_body eval
@@ -125,7 +125,7 @@ location = /t {
             local nodes = cjson.decode(ngx.req.get_body_data())
             for _, node in ipairs(nodes) do
                 log.error("save node: ", cjson.encode(node))
-                discovery_stroe.save_service_node(node)
+                discovery_stroe.set_service_node(node)
             end
 
             check_res("ok", nil, true)

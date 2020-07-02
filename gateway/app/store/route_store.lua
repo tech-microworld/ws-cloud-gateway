@@ -14,20 +14,20 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-local cjson = require("cjson")
-local ngx = ngx
-local timer_at = ngx.timer.at
+local error = error
 local ipairs = ipairs
-local pairs = pairs
 local etcd = require("app.core.etcd")
 local log = require("app.core.log")
 local tab_nkeys = require("table.nkeys")
 local str_utils = require("app.utils.str_utils")
 local core_table = require("app.core.table")
 local time = require("app.core.time")
-local routes_cache = ngx.shared.routes_cache
+local router = require("app.core.router")
+local timer = require("app.core.timer")
 
 local _M = {}
+
+local route_timer
 
 local etcd_prefix = "routes"
 
@@ -44,58 +44,6 @@ local function is_exsit(key)
 end
 
 _M.is_exsit = is_exsit
-
--- 注册和更新路由配置
-local function apply_route(route)
-    local route_info = cjson.encode(route)
-    routes_cache:safe_set(route.key, route_info)
-    log.alert("apply route: ", route.key, " => ", route_info)
-end
-
--- 通过uri查询路由配置
-local function get_route_by_uri(uri)
-    if str_utils.is_blank(uri) then
-        return nil
-    end
-    local route_info, _ = routes_cache:get(uri)
-    log.info("get route from cache ==> uri:", uri, ", route_info: ", route_info)
-    if route_info then
-        local route = cjson.decode(route_info)
-        if not route.props then
-            route.props = {}
-        end
-        return route
-    end
-    -- 递归父级uri
-    local parent_uri = str_utils.substr_before_last(uri, "/")
-    return get_route_by_uri(parent_uri)
-end
-
-_M.get_route_by_uri = get_route_by_uri
-
-local function query_routes()
-    local resp, err = etcd.readdir(etcd_prefix)
-    if err ~= nil then
-        log.error("failed to load routes", err)
-        return err
-    end
-
-    if not resp or not resp.body then
-        return nil, "body is nil"
-    end
-
-    local routes = {}
-    if resp.body.kvs and tab_nkeys(resp.body.kvs) > 0 then
-        for _, node in ipairs(resp.body.kvs) do
-            local route = node.value
-            routes[route.prefix] = route
-        end
-        return routes, nil
-    end
-    return nil, "route is empty"
-end
-
-_M.query_routes = query_routes
 
 -- 查询所有路由配置，返回 list
 local function query_list()
@@ -116,18 +64,38 @@ end
 
 _M.query_list = query_list
 
--- 删除缓存配置
-local function delete_route_cache(route_prefix)
-    routes_cache:delete(route_prefix)
+local function query_enable_list()
+    local list, err = query_list()
+    if not list and tab_nkeys(list) < 1 then
+        return nil, err
+    end
+
+    local routes = {}
+    for _, route in ipairs(list) do
+        if route.status == 1 then
+            core_table.insert(routes, route)
+        end
+    end
+    return routes, nil
+end
+
+_M.query_enable_list = query_enable_list
+
+local function refresh_router()
+    local routes, err = query_enable_list()
+    if not routes and tab_nkeys(routes) < 1 then
+        return nil, err
+    end
+    router.refresh(routes)
 end
 
 -- 删除路由
 local function remove_route(key)
-    log.alert("remove route: ", key)
+    log.error("remove route: ", key)
     local etcd_key = get_etcd_key(key)
     local _, err = etcd.delete(etcd_key)
     if not err then
-        delete_route_cache(key)
+        refresh_router()
     end
     return err
 end
@@ -145,34 +113,16 @@ function _M.save_route(route)
         log.error("save route error: ", err)
         return err
     end
-    if route.status == 1 then
-        apply_route(route)
-    else
-        delete_route_cache(key)
-    end
+    refresh_router()
     return nil
-end
-
-local function load_routes()
-    local routes, err = query_routes()
-    if err then
-        log.error("load routes fail: ", err)
-        return
-    end
-    for _, route in pairs(routes) do
-        apply_route(route)
-    end
 end
 
 -- 初始化
 function _M.init()
-    if 0 ~= ngx.worker.id() then
-        log.info("worker id is not 0 and do nothing")
-        return
-    end
-    local ok, err = timer_at(0, load_routes)
+    route_timer = timer.new("route.timer", refresh_router, {delay = 0, use_lock = true})
+    local ok, err = route_timer:once()
     if not ok then
-        log.error("failed to load routes: ", err)
+        error("failed to load routes: " .. err)
     end
 end
 

@@ -40,10 +40,10 @@ __DATA__
         content_by_lua_block {
             local cjson = require "cjson"
             local log = require("app.core.log")
-            local route_store = require("app.store.route_store")
+            local router = require("app.core.router")
 
             local url = ngx.var.arg_url
-            local route = route_store.get_route_by_uri(url)
+            local route = router.match(url)
             check_res(route and  route.prefix or "", nil, true)
         }
     }
@@ -64,7 +64,7 @@ __DATA__
 [
     'POST /save
     {
-        "prefix": "/openapi/demo",
+        "prefix": "/openapi/demo/*",
         "status": 1,
         "service_name": "demo",
         "protocol": "http",
@@ -79,8 +79,8 @@ __DATA__
     'GET /query?url=/openapi/demo/info',
     'POST /save
     {
-        "key": "/openapi/demo",
-        "prefix": "/openapi/demo",
+        "key": "/openapi/demo/*",
+        "prefix": "/openapi/demo/*",
         "status": 0,
         "service_name": "demo",
         "protocol": "http",
@@ -93,13 +93,13 @@ __DATA__
     }
     ',
     'GET /query?url=/openapi/demo/info',
-    'DELETE /delete?prefix=/openapi/demo'
+    'DELETE /delete?prefix=/openapi/demo/*'
 ]
 
 --- response_body eval
 [
     "ok\n",
-    "/openapi/demo\n",
+    "/openapi/demo/*\n",
     "ok\n",
     "\n",
     "ok\n"

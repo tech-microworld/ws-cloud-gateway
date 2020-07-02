@@ -22,7 +22,7 @@ start: default
 	@echo "server start"
 	@nginx -p `pwd` -c conf/nginx.conf -g 'daemon off;'
 
-### start-background:	后台启动服务
+### start-background:			后台启动服务
 start-background: default
 	@echo "server start"
 	@nginx -p `pwd` -c conf/nginx.conf
@@ -44,7 +44,7 @@ endif
 ### test:				执行测试用例
 .PHONY: test
 test:
-	@prove -I./ -r -s t
+	@prove -I./ -r -s t/
 
 test-store:
 	@prove -I./ -r -s t/app/store
@@ -70,7 +70,7 @@ lint: utils
 	./bin/check-lua-code-style.sh
 
 
-### help: 				Makefile帮助
+### help:				Makefile帮助
 .PHONY: help
 help: default
 	@echo Makefile cmd:
@@ -79,18 +79,18 @@ help: default
 
 
 .PHONY: license-tool
-### license-tool:		安装源码检测工具 openwhisk-utilities，校验license header
+### license-tool:			安装源码检测工具 openwhisk-utilities，校验license header
 license-tool:
 ifeq ("$(wildcard .travis/openwhisk-utilities/scancode/scanCode.py)", "")
 	git clone https://github.com/tech-microworld/openwhisk-utilities.git .travis/openwhisk-utilities
 	cp .travis/ASF* .travis/openwhisk-utilities/scancode/
 endif
 
-### license-check:		源码检查是否包含 license header
+### license-check:			源码检查是否包含 license header
 license-check: license-tool
 	.travis/openwhisk-utilities/scancode/scanCode.py --config .travis/ASF-Release.cfg .
 
-### license-header:		自动给源码增加 license header
+### license-header:			自动给源码增加 license header
 license-header: license-tool
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./gateway -f '*.lua' -t ASFLicenseHeaderLua.txt
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.pm' -t ASFLicenseHeaderBash.txt
@@ -112,9 +112,9 @@ ifeq ("$(wildcard .travis/openresty-systemtap-toolkit/fix-lua-bt)", "")
 endif
 
 ### benchmark-wrk:			wrk 压力测试
-benchmark-wrk: benchmark-tool		
+benchmark-wrk: benchmark-tool
 	@cd benchmark && sh run-wrk.sh
 
-### benchmark-flame:		绘制火焰图
-benchmark-flame: benchmark-tool		
+### benchmark-flame:			绘制火焰图
+benchmark-flame: benchmark-tool
 	@cd benchmark && sh flame.sh
