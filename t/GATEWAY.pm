@@ -55,6 +55,7 @@ _EOC_
     # 全局缓存定义
     lua_shared_dict upstream_type_cache 1m;
     lua_shared_dict timer_lock 1m;
+    lua_shared_dict lrucache_lock 1m;
 
     #最大等待任务数
     lua_max_pending_timers 1024;

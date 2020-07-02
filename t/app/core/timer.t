@@ -37,11 +37,7 @@ __DATA__
                 log.warn("job exit")
             end
 
-            local job = timer.new({
-                name = "once.job",
-                delay = 0.5,
-                callback = callback
-            })
+            local job = timer.new("once.job", callback, {delay = 0.5, use_lock = false})
             job:once()
             ngx.say("create timer: ", type(job))
             ngx.sleep(3)
@@ -70,13 +66,7 @@ qr/(job enter\njob exit)+/
                 log.warn("job exit")
             end
             
-            local lock = timer.new_lock()
-            local job = timer.new({
-                name = "every.job",
-                delay = 1,
-                callback = callback,
-                lock = lock
-            })
+            local job = timer.new("every.job", callback, {delay = 1, use_lock = true})
             job:every()
             job:every()
             job:every()
