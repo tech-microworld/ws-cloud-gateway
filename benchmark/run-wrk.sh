@@ -24,10 +24,10 @@ token=e09d6153f1c15395397be3639d144794
 
 curl http://127.0.0.1:10000/admin/routes/save -H "X-Api-Token: ${token}" -X POST -d '
 {
-    "key": "/innerapi/hello/**",
+    "key": "/innerapi/hello/*",
     "protocol": "http",
     "remark": "",
-    "prefix": "/innerapi/hello/**",
+    "prefix": "/innerapi/hello/*",
     "service_name": "hello",
     "status": 1,
     "plugins": [
