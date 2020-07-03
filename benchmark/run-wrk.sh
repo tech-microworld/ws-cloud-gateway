@@ -54,8 +54,12 @@ curl http://127.0.0.1:10000/admin/services/save -H "X-Api-Token: ${token}" -X PO
 
 echo
 
+echo 'benchmark start'
+
 mkdir -p out
 wrk -d 5 -c 16 --latency http://127.0.0.1:10000/innerapi/hello > out/wrk.out
+
+cat out/wrk.out
 
 nginx -p `pwd`/server -c conf/nginx.conf -s stop || exit 1
 echo 'benchmark end'

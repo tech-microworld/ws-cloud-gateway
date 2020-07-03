@@ -27,6 +27,11 @@ export_or_prefix() {
     echo $GOROOT
 }
 
+show_server_info() {
+    lscpu
+    free -h
+}
+
 install_etcd() {
     export ETCDCTL_API=3
     ETCD_VER=v3.4.9
@@ -112,6 +117,7 @@ do_install() {
 }
 
 script() {
+    show_server_info
     export_or_prefix
 
     make license-check
@@ -128,7 +134,6 @@ script() {
 after_success() {
     # cat luacov.stats.out
     # luacov-coveralls
-    cat benchmark/out/wrk.out
 }
 
 case_opt=$1
