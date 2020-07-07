@@ -37,28 +37,28 @@ install_etcd() {
     export ETCDCTL_API=3
     ETCD_VER=v3.4.9
     BUILD_DIR=build-cache/etcd
-    BIN_DIR=${BUILD_DIR}/bin
+    export ETCD_BIN_DIR=${BUILD_DIR}/bin
 
-    if [ ! -f "${BIN_DIR}/etcd" ]; then
-        mkdir -p ${BIN_DIR}
+    if [ ! -f "${ETCD_BIN_DIR}/etcd" ]; then
+        mkdir -p ${ETCD_BIN_DIR}
         # choose either URL
         # GOOGLE_URL=https://storage.googleapis.com/etcd
         GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
         DOWNLOAD_URL=${GITHUB_URL}
 
         curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o ${BUILD_DIR}/etcd-${ETCD_VER}-linux-amd64.tar.gz
-        tar xzvf $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${BIN_DIR} --strip-components=1
+        tar xzvf $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${ETCD_BIN_DIR} --strip-components=1
         rm -f $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz
     fi
 
-    ${BIN_DIR}/etcd --version
-    ${BIN_DIR}/etcdctl version
+    ${ETCD_BIN_DIR}/etcd --version
+    ${ETCD_BIN_DIR}/etcdctl version
     # start etcd server
-    nohup ${BIN_DIR}/etcd > etcd.log 2>&1 &
+    nohup ${ETCD_BIN_DIR}/etcd > etcd.log 2>&1 &
     sleep 3
 
-    ${BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
-    ${BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
 }
 
 
@@ -132,7 +132,7 @@ script() {
 after_success() {
     # cat luacov.stats.out
     # luacov-coveralls
-    etcdctl get '/my/cloud' --prefix
+    ${ETCD_BIN_DIR}/etcdctl get '/my/cloud' --prefix
     tail -n50 logs/error.log
 }
 
