@@ -56,6 +56,8 @@ echo
 
 echo 'benchmark start'
 
+etcdctl get '/my/cloud' --prefix
+
 mkdir -p out
 wrk -d 5 -c 16 --latency http://127.0.0.1:10000/innerapi/hello/api > out/wrk.out
 
