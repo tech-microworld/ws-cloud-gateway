@@ -134,7 +134,7 @@ after_success() {
     export_or_prefix
     # cat luacov.stats.out
     # luacov-coveralls
-    tail -n50 logs/error.log
+    cat logs/error.log
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get '/my/cloud' --prefix
 }
 
