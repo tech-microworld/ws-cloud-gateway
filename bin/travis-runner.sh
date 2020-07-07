@@ -120,21 +120,17 @@ script() {
     show_server_info
     export_or_prefix
 
-    make license-check
-    make init
-    make test
+    make verify
     make start-background
     sleep 2
     make benchmark-wrk
     make stop
-    sleep 1
-    tail -n50 logs/error.log
 }
 
 after_success() {
     # cat luacov.stats.out
     # luacov-coveralls
-    echo 'after'
+    tail -n50 logs/error.log
 }
 
 case_opt=$1

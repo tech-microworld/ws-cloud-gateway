@@ -18,16 +18,19 @@
 
 local setmetatable = setmetatable
 local json_encode = require("cjson.safe").encode
+local json_decode = require("cjson.safe").decode
 local clear_tab = require("table.clear")
+local log = require("app.core.log")
 local ngx = ngx
 local tostring = tostring
 local type = type
 local pairs = pairs
+local io = io
 local cached_tab = {}
 
 local _M = {
     version = 0.1,
-    decode = require("cjson.safe").decode
+    decode = json_decode
 }
 
 local function serialise_obj(data)
@@ -91,6 +94,15 @@ function _M.delay_encode(data, force)
     delay_tab.data = data
     delay_tab.force = force
     return delay_tab
+end
+
+function _M.decode_json_file(path)
+    log.info("decode json path: ", path)
+    local jsonFile = io.open(path, "r")
+    local jsonStr = jsonFile:read("*a")
+    log.info("decode json data: ", jsonStr)
+    jsonFile:close()
+    return json_decode(jsonStr)
 end
 
 return _M

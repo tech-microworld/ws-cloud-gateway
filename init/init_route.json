@@ -1,0 +1,40 @@
+[
+  {
+    "prefix": "/openapi/demo1/*",
+    "status": 1,
+    "service_name": "demo1",
+    "protocol": "http",
+    "plugins": ["discovery", "tracing", "rewrite"],
+    "props": {
+      "rewrite_url_regex": "^/openapi/(.*)/",
+      "rewrite_replace": "/openapi/"
+    }
+  },
+  {
+    "prefix": "/innerapi/demo1/*",
+    "status": 1,
+    "service_name": "demo1",
+    "protocol": "http",
+    "plugins": ["discovery", "tracing", "rewrite"],
+    "props": {
+      "rewrite_url_regex": "^/innerapi/(.*)/",
+      "rewrite_replace": "/"
+    }
+  },
+  {
+    "prefix": "/openapi/demo2/*",
+    "status": 1,
+    "service_name": "demo2",
+    "protocol": "http",
+    "plugins": ["discovery", "tracing"],
+    "props": {}
+  },
+  {
+    "prefix": "/grpc.hello.*",
+    "status": 1,
+    "service_name": "grpc-demo",
+    "protocol": "grpc",
+    "plugins": ["discovery", "tracing"],
+    "props": {}
+  }
+]

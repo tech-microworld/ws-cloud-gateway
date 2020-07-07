@@ -1,0 +1,32 @@
+[
+  {
+    "service_name": "demo1",
+    "upstream": "127.0.0.1:1024",
+    "weight": 1,
+    "status": 1
+  },
+  {
+    "service_name": "demo1",
+    "upstream": "127.0.0.1:1025",
+    "weight": 1,
+    "status": 1
+  },
+  {
+    "service_name": "demo2",
+    "upstream": "127.0.0.1:1026",
+    "weight": 1,
+    "status": 1
+  },
+  {
+    "service_name": "demo2",
+    "upstream": "127.0.0.1:1027",
+    "weight": 1,
+    "status": 1
+  },
+  {
+    "service_name": "grpc-demo",
+    "upstream": "127.0.0.1:2021",
+    "weight": 1,
+    "status": 1
+  }
+]

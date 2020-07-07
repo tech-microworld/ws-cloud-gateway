@@ -14,40 +14,24 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
+local app = require("app.init")
+-- init
+do
+    app.http_init()
+end -- end do
+
+local os = os
+local ngx = ngx
+local ipairs = ipairs
 local json = require("app.core.json")
-local str_utils = require("app.utils.str_utils")
-local ngx_config = ngx.config
-local error = error
+local route_store = require("app.store.route_store")
 
-local _M = {}
+local data_file = os.getenv("BASE_DIR") .. "/init/init_route.json"
+ngx.say("load data: " .. data_file)
+local datas = json.decode_json_file(data_file)
 
-local app_config = {}
-
-function _M.init(config_file)
-    if not str_utils.start_with(config_file, "/") then
-        config_file = ngx_config.prefix() .. config_file
-    end
-    app_config = json.decode_json_file(config_file)
+for _, data in ipairs(datas) do
+    route_store.save_route(data)
 end
 
-local function get(key)
-    if not app_config then
-        error("etcd config not init")
-        return nil
-    end
-    return app_config[key]
-end
-
-_M.get = get
-
--- 获取etcd配置
-function _M.get_etcd_config()
-    return get("etcd")
-end
-
--- 是否是测试环境
-function _M.is_test()
-    return not app_config.env == "prod"
-end
-
-return _M
+ngx.say("init routes")
