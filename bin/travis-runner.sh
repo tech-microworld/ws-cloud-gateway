@@ -23,6 +23,9 @@ export_or_prefix() {
     export OPENRESTY_PREFIX="/usr/local/openresty-debug"
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
     export GO111MOUDULE=on
+    export ETCDCTL_API=3
+    export ETCD_BUILD_DIR=build-cache/etcd
+    export ETCD_BIN_DIR=${BUILD_DIR}/bin
     echo $PATH
     echo $GOPATH
     echo $GOROOT
@@ -34,10 +37,8 @@ show_server_info() {
 }
 
 install_etcd() {
-    export ETCDCTL_API=3
+    export_or_prefix
     ETCD_VER=v3.4.9
-    BUILD_DIR=build-cache/etcd
-    export ETCD_BIN_DIR=${BUILD_DIR}/bin
 
     if [ ! -f "${ETCD_BIN_DIR}/etcd" ]; then
         mkdir -p ${ETCD_BIN_DIR}
@@ -47,8 +48,8 @@ install_etcd() {
         DOWNLOAD_URL=${GITHUB_URL}
 
         curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o ${BUILD_DIR}/etcd-${ETCD_VER}-linux-amd64.tar.gz
-        tar xzvf $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${ETCD_BIN_DIR} --strip-components=1
-        rm -f $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz
+        tar xzvf $ETCD_BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${ETCD_BIN_DIR} --strip-components=1
+        rm -f $ETCD_BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz
     fi
 
     ${ETCD_BIN_DIR}/etcd --version
@@ -130,10 +131,11 @@ script() {
 }
 
 after_success() {
+    export_or_prefix
     # cat luacov.stats.out
     # luacov-coveralls
-    ${ETCD_BIN_DIR}/etcdctl get '/my/cloud' --prefix
     tail -n50 logs/error.log
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get '/my/cloud' --prefix
 }
 
 case_opt=$1
