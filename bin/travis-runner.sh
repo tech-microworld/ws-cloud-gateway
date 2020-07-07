@@ -83,7 +83,7 @@ do_install() {
     sudo add-apt-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
     sudo add-apt-repository -y ppa:longsleep/golang-backports
     sudo apt-get update
-    sudo apt-get install openresty golang-go
+    sudo apt-get install openresty-resty golang-go
 
     lua_version=lua-5.3.5
     if [ ! -f "build-cache/${lua_version}" ]; then
