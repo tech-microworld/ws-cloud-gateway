@@ -20,7 +20,7 @@
 set -ex
 
 export_or_prefix() {
-    export OPENRESTY_PREFIX="/usr/local/openresty"
+    export OPENRESTY_PREFIX="/usr/local/openresty-debug"
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
     export GO111MOUDULE=on
     echo $PATH
@@ -83,7 +83,7 @@ do_install() {
     sudo add-apt-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
     sudo add-apt-repository -y ppa:longsleep/golang-backports
     sudo apt-get update
-    sudo apt-get install openresty-resty golang-go
+    sudo apt-get install openresty-debug openresty-resty golang-go
 
     lua_version=lua-5.3.5
     if [ ! -f "build-cache/${lua_version}" ]; then
