@@ -120,6 +120,7 @@ script() {
     show_server_info
     export_or_prefix
 
+    make clean
     make verify
     make start-background
     sleep 2
