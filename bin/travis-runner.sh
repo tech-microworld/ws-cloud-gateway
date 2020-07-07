@@ -25,7 +25,7 @@ export_or_prefix() {
     export GO111MOUDULE=on
     export ETCDCTL_API=3
     export ETCD_BUILD_DIR=build-cache/etcd
-    export ETCD_BIN_DIR=${BUILD_DIR}/bin
+    export ETCD_BIN_DIR=${ETCD_BUILD_DIR}/bin
     echo $PATH
     echo $GOPATH
     echo $GOROOT
