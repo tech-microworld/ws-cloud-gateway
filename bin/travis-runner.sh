@@ -23,6 +23,7 @@ export_or_prefix() {
     export OPENRESTY_PREFIX="/usr/local/openresty-debug"
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
     export GO111MOUDULE=on
+    ls -la $OPENRESTY_PREFIX/bin
     echo $GOPATH
     echo $GOROOT
 }
