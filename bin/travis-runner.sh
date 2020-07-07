@@ -132,6 +132,7 @@ script() {
 after_success() {
     # cat luacov.stats.out
     # luacov-coveralls
+    etcdctl get '/my/cloud' --prefix
     tail -n50 logs/error.log
 }
 
