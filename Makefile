@@ -1,8 +1,8 @@
-export BASE_DIR=$(shell pwd)
+gateway_config_file ?= conf/app.json
+export BASE_DIR := $(shell pwd)
+export gateway_config_file := ${BASE_DIR}/${gateway_config_file}
 OR_EXEC ?= $(shell which openresty)
 LUAROCKS_VER ?= $(shell luarocks --version | grep -E -o  "luarocks [0-9]+.")
-gateway_config_file ?= "conf/app.json"
-gateway_config_file := ${BASE_DIR}/${gateway_config_file}
 
 .PHONY: default
 default:
