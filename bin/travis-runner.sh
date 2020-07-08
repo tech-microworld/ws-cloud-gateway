@@ -73,6 +73,7 @@ install_lua_deps() {
 }
 
 before_install() {
+    show_server_info
     sudo cpanm --notest Test::Nginx >build.log 2>&1 || (cat build.log && exit 1)
     sleep 1
 }
@@ -119,7 +120,6 @@ do_install() {
 }
 
 script() {
-    show_server_info
     export_or_prefix
 
     make clean
@@ -128,14 +128,13 @@ script() {
     sleep 2
     make benchmark-wrk
     make stop
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get '/my/cloud' --prefix
 }
 
 after_success() {
-    export_or_prefix
     # cat luacov.stats.out
     # luacov-coveralls
     cat logs/error.log
-    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get '/my/cloud' --prefix
 }
 
 case_opt=$1
