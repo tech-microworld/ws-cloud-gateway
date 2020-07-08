@@ -134,7 +134,8 @@ script() {
 after_success() {
     # cat luacov.stats.out
     # luacov-coveralls
-    cat logs/error.log
+    # cat logs/error.log
+    tail -n50 logs/error.log
 }
 
 case_opt=$1
