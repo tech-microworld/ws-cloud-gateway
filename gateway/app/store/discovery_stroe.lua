@@ -203,7 +203,7 @@ local function watch_services(ctx)
         ctx.start_revision = chunk.result.header.revision + 1
         if chunk.result.events then
             for _, event in ipairs(chunk.result.events) do
-                log.error("services event: ", {event.type, event.kv})
+                log.error("routes event: ", event.type, " - ", json.delay_encode(event.kv))
                 local node = parse_node(event.kv.value)
                 if delete_type == event.type then
                     balancer.delete(node.service_name, node.upstream)

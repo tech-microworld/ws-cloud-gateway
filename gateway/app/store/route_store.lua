@@ -124,7 +124,7 @@ local function watch_routes(ctx)
         ctx.start_revision = chunk.result.header.revision + 1
         if chunk.result.events then
             for _, event in ipairs(chunk.result.events) do
-                log.error("routes event: ", {event.type, event.kv})
+                log.error("routes event: ", event.type, " - ", json.delay_encode(event.kv))
                 refresh_router()
             end
         end
