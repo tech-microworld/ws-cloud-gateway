@@ -27,7 +27,7 @@ local _M = {}
 local balancer_cache
 
 do
-    balancer_cache = lrucache.new({count = 1024, ttl = 60 * 5})
+    balancer_cache = lrucache.new({count = 1024})
 end -- end do
 
 function _M.set_upstream_type(service_name, type)
@@ -70,10 +70,7 @@ function _M.set(service_name, upstream, weight)
     local balancer_up = get(service_name)
     if not balancer_up then
         local nodes = {
-            {
-                upstream = upstream,
-                weight = weight
-            }
+            [upstream] = weight
         }
         refresh(service_name, nodes)
         return
