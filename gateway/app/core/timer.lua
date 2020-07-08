@@ -57,7 +57,8 @@ function _M.new(name, callback, opts)
         callback = callback,
         delay = opts.delay or 0.5,
         lock = lock,
-        fail_sleep_time = opts.fail_sleep_time or 0
+        fail_sleep_time = opts.fail_sleep_time or 0,
+        ctx = {}
     }
     return setmetatable(self, mt)
 end
@@ -83,7 +84,7 @@ local function callback_fun(self)
         end
         log.info("timer[", name, "] start")
         local start_time = time.now()
-        local ok, err = pcall(callback)
+        local ok, err = pcall(callback, self.ctx)
         if not ok then
             log.error("failed to run the timer: ", name, " err: ", err)
         end

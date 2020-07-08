@@ -31,7 +31,7 @@ do
 end -- end do
 
 local function create_rx(routes)
-    log.debug("routes: ", json.delay_encode(routes))
+    log.info("routes: ", json.delay_encode(routes))
     local mapping = {}
     for _, route in ipairs(routes) do
         core_table.insert(

@@ -28,6 +28,8 @@ local json = require("app.core.json")
 
 local discovery_timer
 local discovery_watcher_timer
+-- 防止网络异常导致节点数据监听处理失败，未及时更新服务节点信息，定时轮训服务节点
+local discovery_refresh_timer
 
 local _M = {}
 
@@ -35,9 +37,8 @@ local delete_type = "DELETE"
 local etcd_prefix = "discovery"
 
 local etcd_watch_opts = {
-    timeout = 10,
-    prev_kv = true,
-    start_revision = nil
+    timeout = 60,
+    prev_kv = true
 }
 
 -- 根据服务名和 upstream 获取 etcd key
@@ -176,25 +177,33 @@ end
 _M.set_service_node = set_service_node
 
 -- 监听服务节点数据变更
-local function watch_services()
-    log.info("watch start_revision: " .. etcd_watch_opts.start_revision)
-    local chunk_fun, err = etcd.watchdir(etcd_prefix, etcd_watch_opts)
+local function watch_services(ctx)
+    log.info("watch services start_revision: ", ctx.start_revision)
+    local opts = {
+        timeout = etcd_watch_opts.timeout,
+        prev_kv = etcd_watch_opts.prev_kv,
+        start_revision = ctx.start_revision
+    }
+    local chunk_fun, err = etcd.watchdir(etcd_prefix, opts)
 
     if not chunk_fun then
-        log.error("failed to watch: ", err)
+        log.error("services chunk err: ", err)
         return
     end
     while true do
         local chunk
         chunk, err = chunk_fun()
         if not chunk then
-            log.error("chunk err: ", err)
+            if err ~= "timeout" then
+                log.error("services chunk err: ", err)
+            end
             break
         end
-        log.info("watch result: ", json.delay_encode(chunk.result))
-        etcd_watch_opts.start_revision = chunk.result.header.revision + 1
+        log.info("services watch result: ", json.delay_encode(chunk.result))
+        ctx.start_revision = chunk.result.header.revision + 1
         if chunk.result.events then
             for _, event in ipairs(chunk.result.events) do
+                log.error("routes event: ", event.type, " - ", json.delay_encode(event.kv))
                 local node = parse_node(event.kv.value)
                 if delete_type == event.type then
                     balancer.delete(node.service_name, node.upstream)
@@ -219,15 +228,16 @@ local function load_services()
 end
 
 -- etcd初始化
-local function init_discovery()
+local function _init()
     load_services()
     discovery_watcher_timer:recursion()
+    discovery_refresh_timer:every()
 end
 
 function _M.init()
-    discovery_timer = timer.new("discovery.timer", init_discovery, {delay = 0, use_lock = true})
-    discovery_watcher_timer =
-        timer.new("discovery.watcher.timer", watch_services, {delay = 0, fail_sleep_time = 3, use_lock = true})
+    discovery_timer = timer.new("discovery.timer", _init, {delay = 0})
+    discovery_refresh_timer = timer.new("discovery.refresh.timer", load_services, {delay = 3})
+    discovery_watcher_timer = timer.new("discovery.watcher.timer", watch_services, {delay = 0})
     local ok, err = discovery_timer:once()
     if not ok then
         error("failed to init discovery: " .. err)

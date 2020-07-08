@@ -3,6 +3,7 @@
 /uwsgi_temp/
 .idea/
 *.log
+.un~
 nginx.pid
 t/servroot
 conf/app-dev.json

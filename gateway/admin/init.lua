@@ -36,7 +36,6 @@ local req_mapping = {}
 
 local function cors_admin()
     local method = get_method()
-    log.info("cors admin: ", method)
     if method == "OPTIONS" then
         resp.set_header(
             "Access-Control-Allow-Origin",
@@ -83,12 +82,12 @@ local function check_api_token()
     if not tokens[token] then
         return false
     end
+    log.info("api token auth: ", token)
     return true
 end
 
 local function check_token()
     if check_api_token() then
-        log.info("api token auth")
         return
     end
 
@@ -105,7 +104,7 @@ local function check_token()
     local session = jwt:verify(jwt_secret, token)
 
     if not session.valid then
-        resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "登录会话过期")
+        resp.exit(ngx.HTTP_UNAUTHORIZED, "未登录")
     end
 
     local username = session.payload.username
