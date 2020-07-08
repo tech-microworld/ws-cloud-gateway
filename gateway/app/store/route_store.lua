@@ -30,6 +30,8 @@ local _M = {}
 
 local route_timer
 local route_watch_timer
+-- 防止网络异常导致路由数据监听处理失败，未及时更新路由信息，定时轮训路由配置
+local route_refresh_timer
 
 local etcd_prefix = "routes"
 
@@ -121,7 +123,10 @@ local function watch_routes(ctx)
         log.info("routes watch result: ", json.delay_encode(chunk.result))
         ctx.start_revision = chunk.result.header.revision + 1
         if chunk.result.events then
-            refresh_router()
+            for _, event in ipairs(chunk.result.events) do
+                log.error("routes event: ", {event.type, event.kv})
+                refresh_router()
+            end
         end
     end
 end
@@ -157,11 +162,13 @@ end
 local function _init()
     refresh_router()
     route_watch_timer:recursion()
+    route_refresh_timer:every()
 end
 
 -- 初始化
 function _M.init()
     route_timer = timer.new("route.timer", _init, {delay = 0})
+    route_refresh_timer = timer.new("route.refresh.timer", refresh_router, {delay = 3})
     route_watch_timer = timer.new("route.watch.timer", watch_routes, {delay = 0})
     local ok, err = route_timer:once()
     if not ok then

@@ -28,6 +28,8 @@ local json = require("app.core.json")
 
 local discovery_timer
 local discovery_watcher_timer
+-- 防止网络异常导致节点数据监听处理失败，未及时更新服务节点信息，定时轮训服务节点
+local discovery_refresh_timer
 
 local _M = {}
 
@@ -201,6 +203,7 @@ local function watch_services(ctx)
         ctx.start_revision = chunk.result.header.revision + 1
         if chunk.result.events then
             for _, event in ipairs(chunk.result.events) do
+                log.error("services event: ", {event.type, event.kv})
                 local node = parse_node(event.kv.value)
                 if delete_type == event.type then
                     balancer.delete(node.service_name, node.upstream)
@@ -228,10 +231,12 @@ end
 local function _init()
     load_services()
     discovery_watcher_timer:recursion()
+    discovery_refresh_timer:every()
 end
 
 function _M.init()
     discovery_timer = timer.new("discovery.timer", _init, {delay = 0})
+    discovery_refresh_timer = timer.new("discovery.refresh.timer", load_services, {delay = 3})
     discovery_watcher_timer = timer.new("discovery.watcher.timer", watch_services, {delay = 0})
     local ok, err = discovery_timer:once()
     if not ok then
