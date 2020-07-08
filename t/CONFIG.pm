@@ -29,8 +29,7 @@ no_shuffle();
 worker_connections(128);
 
 my $app_home = cwd();
-my $config_file = $ENV{'gateway_config_file'} || 'conf/app.json';
-my $config_file = "$app_home/$config_file";
+my $config_file = $ENV{'gateway_config_file'} || "$app_home/conf/app.json";
 
 add_block_preprocessor(sub {
     # my $block = shift;

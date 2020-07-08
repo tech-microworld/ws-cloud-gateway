@@ -153,9 +153,9 @@ end
 _M.delete_etcd_node = delete_etcd_node
 
 -- 设置服务节点到 etcd
-local function set_service_node(service)
-    local old_key = service.key
-    local payload = parse_node(service)
+local function set_service_node(node)
+    local old_key = node.key
+    local payload = parse_node(node)
     local _, err
     -- key 不相同，则是更新节点，需要删除旧节点
     if old_key and old_key ~= payload.key then
@@ -167,7 +167,7 @@ local function set_service_node(service)
     end
     _, err = etcd.set(service_node_etcd_key(payload.key), payload)
     if err then
-        log.error("save service node error: ", err, " - ", json.delay_encode(service))
+        log.error("save service node error: ", err, " - ", json.delay_encode(node))
         return false, err
     end
     return true, nil

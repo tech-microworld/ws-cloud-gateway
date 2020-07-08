@@ -57,7 +57,7 @@ echo
 echo 'benchmark start'
 
 mkdir -p out
-wrk -d 5 -c 16 --latency http://127.0.0.1:10000/innerapi/hello > out/wrk.out
+wrk -d 5 -c 16 --latency http://127.0.0.1:10000/innerapi/hello/api > out/wrk.out
 
 cat out/wrk.out
 

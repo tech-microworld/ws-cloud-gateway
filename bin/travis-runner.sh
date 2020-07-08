@@ -23,6 +23,10 @@ export_or_prefix() {
     export OPENRESTY_PREFIX="/usr/local/openresty-debug"
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
     export GO111MOUDULE=on
+    export ETCDCTL_API=3
+    export ETCD_BUILD_DIR=build-cache/etcd
+    export ETCD_BIN_DIR=${ETCD_BUILD_DIR}/bin
+    echo $PATH
     echo $GOPATH
     echo $GOROOT
 }
@@ -33,31 +37,29 @@ show_server_info() {
 }
 
 install_etcd() {
-    export ETCDCTL_API=3
+    export_or_prefix
     ETCD_VER=v3.4.9
-    BUILD_DIR=build-cache/etcd
-    BIN_DIR=${BUILD_DIR}/bin
 
-    if [ ! -f "${BIN_DIR}/etcd" ]; then
-        mkdir -p ${BIN_DIR}
+    if [ ! -f "${ETCD_BIN_DIR}/etcd" ]; then
+        mkdir -p ${ETCD_BIN_DIR}
         # choose either URL
         # GOOGLE_URL=https://storage.googleapis.com/etcd
         GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
         DOWNLOAD_URL=${GITHUB_URL}
 
         curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o ${BUILD_DIR}/etcd-${ETCD_VER}-linux-amd64.tar.gz
-        tar xzvf $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${BIN_DIR} --strip-components=1
-        rm -f $BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz
+        tar xzvf $ETCD_BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${ETCD_BIN_DIR} --strip-components=1
+        rm -f $ETCD_BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz
     fi
 
-    ${BIN_DIR}/etcd --version
-    ${BIN_DIR}/etcdctl version
+    ${ETCD_BIN_DIR}/etcd --version
+    ${ETCD_BIN_DIR}/etcdctl version
     # start etcd server
-    nohup ${BIN_DIR}/etcd > etcd.log 2>&1 &
+    nohup ${ETCD_BIN_DIR}/etcd > etcd.log 2>&1 &
     sleep 3
 
-    ${BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
-    ${BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
 }
 
 
@@ -71,6 +73,7 @@ install_lua_deps() {
 }
 
 before_install() {
+    show_server_info
     sudo cpanm --notest Test::Nginx >build.log 2>&1 || (cat build.log && exit 1)
     sleep 1
 }
@@ -82,7 +85,7 @@ do_install() {
     sudo add-apt-repository -y "deb http://openresty.org/package/ubuntu $(lsb_release -sc) main"
     sudo add-apt-repository -y ppa:longsleep/golang-backports
     sudo apt-get update
-    sudo apt-get install openresty-debug golang-go
+    sudo apt-get install openresty-debug openresty-resty golang-go
 
     lua_version=lua-5.3.5
     if [ ! -f "build-cache/${lua_version}" ]; then
@@ -117,24 +120,22 @@ do_install() {
 }
 
 script() {
-    show_server_info
     export_or_prefix
 
-    make license-check
-    make init
-    make test
+    make clean
+    make verify
     make start-background
     sleep 2
     make benchmark-wrk
     make stop
-    sleep 1
-    tail -n50 logs/error.log
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get '/my/cloud' --prefix
 }
 
 after_success() {
     # cat luacov.stats.out
     # luacov-coveralls
-    echo 'after'
+    # cat logs/error.log
+    tail -n50 logs/error.log
 }
 
 case_opt=$1

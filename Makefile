@@ -1,4 +1,7 @@
-export OR_EXEC ?= $(shell which openresty)
+gateway_config_file ?= conf/app.json
+export BASE_DIR := $(shell pwd)
+export gateway_config_file := ${BASE_DIR}/${gateway_config_file}
+OR_EXEC ?= $(shell which openresty)
 LUAROCKS_VER ?= $(shell luarocks --version | grep -E -o  "luarocks [0-9]+.")
 
 .PHONY: default
@@ -12,10 +15,37 @@ endif
 
 LUAJIT_DIR ?= $(shell ${OR_EXEC} -V 2>&1 | grep prefix | grep -Eo 'prefix=(.*)/nginx\s+--' | grep -Eo '/.*/')luajit
 
-### init:				初始化
+verify: lint license-check test
+
 .PHONY: init
+### init:				初始化数据
 init: default
-	@prove -I./ -r -s t/app/init
+	@resty --errlog-level=error \
+	-I=./gateway \
+	-I=./gateway/app/init.lua \
+	-I=./deps/share/lua/5.1 \
+	-I=./deps/lib/lua/5.1 \
+	-I=./deps/lib64/lua/5.1 \
+	init/init_route.lua
+
+	@resty --errlog-level=error \
+	-I=./gateway \
+	-I=./gateway/app/init.lua \
+	-I=./deps/share/lua/5.1 \
+	-I=./deps/lib/lua/5.1 \
+	-I=./deps/lib64/lua/5.1 \
+	init/init_discovery.lua
+
+### clean:				清理数据&日志
+clean: default
+	rm -rf logs/*.log
+	@resty --errlog-level=error \
+	-I=./gateway \
+	-I=./gateway/app/init.lua \
+	-I=./deps/share/lua/5.1 \
+	-I=./deps/lib/lua/5.1 \
+	-I=./deps/lib64/lua/5.1 \
+	init/clean.lua
 
 ### start:				启动服务
 start: default
@@ -69,7 +99,6 @@ endif
 lint: utils
 	./bin/check-lua-code-style.sh
 
-
 ### help:				Makefile帮助
 .PHONY: help
 help: default
@@ -93,6 +122,7 @@ license-check: license-tool
 ### license-header:			自动给源码增加 license header
 license-header: license-tool
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./gateway -f '*.lua' -t ASFLicenseHeaderLua.txt
+	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./init -f '*.lua' -t ASFLicenseHeaderLua.txt
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.pm' -t ASFLicenseHeaderBash.txt
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.t' -t ASFLicenseHeaderBash.txt
 	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./bin -f '*.sh' -t ASFLicenseHeaderBash.txt
