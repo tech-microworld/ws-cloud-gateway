@@ -124,10 +124,8 @@ script() {
 
     make clean
     make verify
-    make start-background
-    sleep 2
-    make benchmark-wrk
-    make stop
+    sleep 1
+    make benchmark
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get '/my/cloud' --prefix
 }
 

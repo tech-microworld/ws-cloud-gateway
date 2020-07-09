@@ -16,6 +16,8 @@ endif
 LUAJIT_DIR ?= $(shell ${OR_EXEC} -V 2>&1 | grep prefix | grep -Eo 'prefix=(.*)/nginx\s+--' | grep -Eo '/.*/')luajit
 
 verify: lint license-check test
+### benchmark:			执行压力测试
+benchmark: start-background demo-server-start benchmark-wrk demo-server-stop stop
 
 .PHONY: init
 ### init:				初始化数据
@@ -59,8 +61,19 @@ start-background: default
 
 ### stop:				停止服务
 stop: default
-	@echo "stop start"
+	@echo "server stop"
 	@nginx -p `pwd` -c conf/nginx.conf -s stop
+
+### demo-server-start:			启动测试服务
+demo-server-start: default
+	@echo "demo server start"
+	@mkdir -p `pwd`/server/logs
+	nginx -p `pwd`/benchmark/server -c conf/nginx.conf
+
+### demo-server-stop:			停止测试服务
+demo-server-stop: default
+	@echo "demo server stop"
+	nginx -p `pwd`/benchmark/server -c conf/nginx.conf -s stop
 
 ### deps:				安装依赖
 .PHONY: deps
