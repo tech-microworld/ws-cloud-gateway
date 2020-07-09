@@ -67,7 +67,7 @@ stop: default
 ### demo-server-start:			启动测试服务
 demo-server-start: default
 	@echo "demo server start"
-	@mkdir -p `pwd`/server/logs
+	@mkdir -p `pwd`/benchmark/server/logs
 	nginx -p `pwd`/benchmark/server -c conf/nginx.conf
 
 ### demo-server-stop:			停止测试服务
