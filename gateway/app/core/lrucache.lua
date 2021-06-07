@@ -47,7 +47,8 @@ local function set_val(obj)
     end
 end
 
-local function set(self, key, obj)
+-- 缓存赋值，指定 ttl
+local function _set_ttl(self, key, obj, ttl)
     local lru = self.lru
     local ttl = self.ttl
     local cached_obj = set_val(obj)
@@ -58,9 +59,15 @@ local function set(self, key, obj)
     end
 end
 
-_M.set = set
+-- 缓存赋值，默认 ttl
+local function _set(self, key, obj)
+    local ttl = self.ttl
+    _set_ttl(self, key, obj, ttl)
+end
 
-local function get(self, key, invalid_stale)
+_M.set = _set
+
+local function _get(self, key, invalid_stale)
     local lru = self.lru
     local obj, stale_obj = lru:get(key)
     if obj then
@@ -72,7 +79,7 @@ local function get(self, key, invalid_stale)
     return nil
 end
 
-_M.get = get
+_M.get = _get
 
 -- 从缓存获取数据
 -- 如果缓存过期，则获得锁的请求更新数据，没有获得锁的请求先返回过期数据
@@ -80,7 +87,7 @@ _M.get = get
 function _M.fetch_cache(self, key, invalid_stale, create_val_fun, ...)
     local lru = self.lru
     local obj, stale_obj = lru:get(key)
-    if obj then
+    if obj ~= nil then
         return get_val(obj)
     end
 
@@ -104,13 +111,22 @@ function _M.fetch_cache(self, key, invalid_stale, create_val_fun, ...)
 
     -- 获得锁成功，则重新获取数据并更新到缓存
     obj = create_val_fun(...)
-    set(self, key, obj)
+    _set(self, key, obj)
     lock:unlock()
     return obj
 end
 
+-- 使缓存过期
+function _M.expire(self, key)
+    local cache_obj = _get(self, key, true)
+    if cache_obj then
+        _set_ttl(self, key, cache_obj, 0)
+    end
+end
+
+-- 删除缓存，删除后 get 不会获得过期值（stale_data）
 function _M.delete(self, key)
-    self.lru:delete(key)
+    return self.lru:delete(key)
 end
 
 function _M.count(self)

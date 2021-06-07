@@ -14,13 +14,17 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
+local require = require
 local ngx = ngx
 local log = require("app.core.log")
+local json = require("app.core.json")
 local route_store = require("app.store.route_store")
-local discovery_stroe = require("app.store.discovery_stroe")
 local resp = require("app.core.response")
-local ngx_balancer = require ("ngx.balancer")
-local balancer = require("app.core.balancer")
+local ngx_balancer = require("ngx.balancer")
+local balancer = require("app.upstream.balancer")
+local config_get = require("app.config").get
+local set_more_tries = ngx_balancer.set_more_tries
+local discovery_stroe
 
 local _M = {
     name = "discovery",
@@ -30,31 +34,58 @@ local _M = {
 }
 
 function _M.do_in_init_worker()
+    discovery_stroe = require("app.store.discovery_stroe")
     discovery_stroe.init()
     route_store.init()
 end
 
 function _M.do_in_rewrite(route)
-    local ngx_ctx = ngx.ctx
     local var = ngx.var
+    local ngx_ctx = ngx.ctx
+    local api_ctx = ngx_ctx.api_ctx
     local service_name = route.service_name
+    -- 放到var，accesslog中可以输出
     var.target_service_name = service_name
 
-    local upstream = balancer.find(service_name)
+    api_ctx.balancer_try_count = (api_ctx.balancer_try_count or 0) + 1
+    local healthcheck = config_get("healthcheck")
+    log.notice("healthcheck config: ", json.delay_encode(healthcheck))
 
-    if not upstream then
-        log.error("can not find any service node")
-        return resp.exit(ngx.HTTP_NOT_FOUND)
+    -- 设置重试次数
+    if healthcheck and healthcheck.try_count and healthcheck.try_count > 0 and api_ctx.balancer_try_count == 1 then
+        set_more_tries(healthcheck.try_count)
     end
 
-    ngx_ctx.upstream_server = upstream
+    local node_list = discovery_stroe.find_node_list_by_cache(service_name, true)
+    local server, err = balancer.pick_server(service_name, node_list, api_ctx)
+    if err then
+        log.error("failed to pick server, err: ", err)
+        return resp.exit(ngx.HTTP_BAD_GATEWAY)
+    end
+    api_ctx.balancer_server = server
+
 end
 
-function _M.do_in_balancer()
+function _M.do_in_balancer(route)
+    local api_ctx = ngx.ctx.api_ctx
+
+    local server = api_ctx.balancer_server
+    if not server then
+        log.error("balancer server is nil")
+        return resp.exit(ngx.HTTP_BAD_GATEWAY)
+    end
+
+    api_ctx.balancer_host = server.host
+    api_ctx.balancer_port = server.port
+    log.info("proxy request to ", server.host, ":", server.port)
+    ngx_balancer.set_current_peer(server.host, server.port)
+end
+
+function _M.do_in_log()
     local ngx_ctx = ngx.ctx
-    local server = ngx_ctx.upstream_server
-    log.info("upstream server: ", server)
-    ngx_balancer.set_current_peer(ngx_ctx.upstream_server)
+    local api_ctx = ngx_ctx.api_ctx
+    api_ctx.last_balancer_host = api_ctx.balancer_host
+    api_ctx.last_balancer_port = api_ctx.balancer_port
 end
 
 return _M

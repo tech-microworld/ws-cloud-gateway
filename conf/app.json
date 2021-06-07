@@ -1,33 +1,49 @@
 {
-    "appName": "ws-cloud-gateway",
-    "env": "test",
-    "etcd": {
-        "http_host": "http://127.0.0.1:2379",
-        "data_prefix": "/my/cloud/"
-    },
-    "plugins": [
-        "default_plugin",
-        "discovery_plugin",
-        "tracing_plugin",
-        "rewrite_plugin"
-    ],
-    "admin": {
-        "jwt_secret": "ws-cloud-gateway-1024",
-        "account": {
-            "admin": {
-                "password": "admin",
-                "info": {
-                    "roles": ["admin"],
-                    "introduction": "I am a super administrator",
-                    "avatar": "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
-                    "name": "管理员"
-                }
-            }
+  "appName": "ws-cloud-gateway",
+  "env": "test",
+  "etcd": {
+    "http_host": "http://192.168.3.9:2379",
+    "data_prefix": "/my/cloud/"
+  },
+  "plugins": [
+    "default_plugin",
+    "discovery_plugin",
+    "tracing_plugin",
+    "rewrite_plugin"
+  ],
+  "admin": {
+    "jwt_secret": "ws-cloud-gateway-1024",
+    "account": {
+      "admin": {
+        "password": "admin",
+        "info": {
+          "roles": ["admin"],
+          "introduction": "I am a super administrator",
+          "avatar": "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
+          "name": "管理员"
         }
-    },
-    "tokens": {
-        "e09d6153f1c15395397be3639d144794": {
-            "desc": "系统默认 api token"
-        }
+      }
     }
+  },
+  "tokens": {
+    "e09d6153f1c15395397be3639d144794": {
+      "desc": "系统默认 api token"
+    }
+  },
+  "healthcheck": {
+    "try_count": 3,
+    "try_code": [502, 503, 504],
+    "active": {
+      "type": "tcp",
+      "timeout": 1,
+      "healthy": {
+        "interval": 3,
+        "successes": 1
+      },
+      "unhealthy": {
+        "interval": 10,
+        "tcp_failures": 2
+      }
+    }
+  }
 }

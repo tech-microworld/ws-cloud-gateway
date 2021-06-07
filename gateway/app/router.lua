@@ -20,18 +20,17 @@ local core_table = require("app.core.table")
 local lrucache = require("app.core.lrucache")
 local radixtree = require("resty.radixtree")
 local json = require("app.core.json")
+local route_store = require("app.store.route_store")
 
 local _M = {}
 
-local radix_cache
+local radix_cache = lrucache.new({ttl = 60, count = 1})
 local rx_key = "router.rx"
 
-do
-    radix_cache = lrucache.new({count = 5})
-end -- end do
-
-local function create_rx(routes)
+local function create_rx()
+    local routes = route_store.query_enable_routers()
     log.info("routes: ", json.delay_encode(routes))
+
     local mapping = {}
     for _, route in ipairs(routes) do
         core_table.insert(
@@ -48,16 +47,15 @@ end
 
 -- 匹配路由
 function _M.match(url)
-    local rx = radix_cache:get(rx_key, false)
+    local rx = radix_cache:fetch_cache(rx_key, false, create_rx)
     local route = rx:match(url)
     log.info("match route: ", json.delay_encode({url, route}))
     return route
 end
 
 -- 注册路由
-function _M.refresh(routes)
-    local rx = create_rx(routes)
-    radix_cache:set(rx_key, rx)
+function _M.refresh()
+    radix_cache:set(rx_key, create_rx())
 end
 
 return _M

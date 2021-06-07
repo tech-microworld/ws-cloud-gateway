@@ -113,7 +113,7 @@ _EOC_
         include common/proxy.conf;
         set \$target_service_name '';
         set \$origin_uri \$uri;
-        lua_code_cache on;
+
         rewrite_by_lua_block {
             local app = require("app")
             app.http_rewrite()

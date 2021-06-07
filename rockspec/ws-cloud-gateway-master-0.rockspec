@@ -22,7 +22,8 @@ dependencies = {
     "lua-resty-cookie = 0.1.0",
     "lua-resty-session = 2.24",
     "lua-resty-prometheus = 1.0",
-    "lua-resty-radixtree = 1.8"
+    "lua-resty-radixtree = 1.8",
+    "lua-resty-healthcheck = 2.0.0"
 }
 
 build = {

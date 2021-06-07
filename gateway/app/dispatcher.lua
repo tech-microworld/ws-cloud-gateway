@@ -15,6 +15,7 @@
 -- limitations under the License.
 --
 local cjson = require("cjson")
+local ngx = ngx
 local call_utils = require("app.utils.call_utils")
 local log = require("app.core.log")
 local setmetatable = setmetatable
@@ -24,6 +25,8 @@ local _M = {}
 local mt = {__index = _M}
 
 function _M.do_in_rewrite(self)
+    local ngx_ctx = ngx.ctx
+    ngx_ctx.api_ctx = ngx_ctx.api_ctx or {}
     call_utils.call(self.plugins, "do_in_rewrite", self.route)
 end
 

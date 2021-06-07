@@ -31,6 +31,7 @@ ngx.say("load data: " .. data_file)
 local datas = json.decode_json_file(data_file)
 
 for _, node in ipairs(datas) do
+    ngx.say("set_service_node: " .. json.encode(node))
     discovery_stroe.set_service_node(node)
 end
 

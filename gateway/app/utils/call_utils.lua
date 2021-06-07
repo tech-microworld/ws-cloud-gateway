@@ -17,6 +17,7 @@
 local log = require("app.core.log")
 local pcall = pcall
 local pairs = pairs
+local error = error
 local _M = {}
 
 function _M.call(modules, method_name, ...)
@@ -28,7 +29,7 @@ function _M.call(modules, method_name, ...)
         end
         local ok, err = pcall(func, ...)
         if not ok then
-            log.error("call error:", method_name, " - ", err)
+            error("call error: " .. name .. ", " .. method_name .. " - " .. err)
         end
 
         ::CONTINUE::

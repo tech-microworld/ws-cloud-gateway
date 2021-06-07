@@ -16,22 +16,31 @@
 --
 local ngx = ngx
 local pcall = pcall
+local require = require
 local log = require("app.core.log")
 local config = require("app.config")
-local resp = require("app.core.response")
+local os = os
 
 local _M = {version = 0.1}
+
+local ctx
 
 function _M.http_init()
     -- 加载配置文件
     local config_file = os.getenv("gateway_config_file") or "conf/app.json"
     config.init(config_file)
 
-    require("app.core.ctx").init()
+    ctx = require("app.ctx")
+    ctx.init()
 end
 
 function _M.http_init_worker()
-    local ctx = require("app.core.ctx")
+    local we = require("resty.worker.events")
+    local ok, err = we.configure({shm = "worker-events", interval = 0.1})
+    if not ok then
+        log.error("failed to init worker event: " .. err)
+    end
+
     local worker_id = ngx.worker.id()
     log.info("init worker: ", worker_id)
 
@@ -50,7 +59,8 @@ local protocol_handler = {
 }
 
 function _M.http_rewrite()
-    local dispatcher = require("app.core.ctx").get_dispatcher()
+    local resp = require("app.core.response")
+    local dispatcher = ctx.get_dispatcher()
     local protocol = dispatcher.route.protocol
     local ok = pcall(protocol_handler[protocol], dispatcher)
     if not ok then
@@ -62,38 +72,38 @@ end
 end -- do
 
 function _M.http_access()
-    local dispatcher = require("app.core.ctx").get_dispatcher()
+    local dispatcher = ctx.get_dispatcher()
     dispatcher:do_in_access()
 end
 
 function _M.http_content()
-    local dispatcher = require("app.core.ctx").get_dispatcher()
+    local dispatcher = ctx.get_dispatcher()
     dispatcher:do_in_content()
 end
 
 function _M.http_balancer()
-    local dispatcher = require("app.core.ctx").get_dispatcher()
+    local dispatcher = ctx.get_dispatcher()
     dispatcher:do_in_balancer()
 end
 
 function _M.http_header_filter()
-    local dispatcher = require("app.core.ctx").get_dispatcher()
+    local dispatcher = ctx.get_dispatcher()
     dispatcher:do_in_header_filter()
 end
 
 function _M.http_body_filter()
-    local dispatcher = require("app.core.ctx").get_dispatcher()
+    local dispatcher = ctx.get_dispatcher()
     dispatcher:do_in_body_filter()
 end
 
 function _M.http_log()
-    local dispatcher = require("app.core.ctx").get_dispatcher()
+    local dispatcher = ctx.get_dispatcher()
     dispatcher:do_in_log()
 end
 
 -- grpc
 function _M.grpc_rewrite()
-    local dispatcher = require("app.core.ctx").get_dispatcher()
+    local dispatcher = ctx.get_dispatcher()
     dispatcher:do_in_rewrite()
 end
 
