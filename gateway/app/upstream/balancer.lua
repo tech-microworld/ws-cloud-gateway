@@ -127,6 +127,7 @@ function _M.pick_server(service_name, node_list, api_ctx)
     end
 
     -- 上次请求失败，重试的时候把上个节点状态更新一下
+    log.info("balancer_try_count: ", api_ctx.balancer_try_count)
     if api_ctx and api_ctx.balancer_try_count > 1 then
         local state, code = get_last_failure()
         local host = api_ctx.last_balancer_host
@@ -162,10 +163,10 @@ function _M.pick_server(service_name, node_list, api_ctx)
             upstream = balancer_up:next(index)
             index = index + 1
         end
-        log.alert("upstream check: ", first_upstream, ", ", upstream, ", ", index)
+        log.info("upstream check: ", first_upstream, ", ", upstream, ", ", index)
         -- 下一个节点和第一个节点相同，说明已经遍历完，已经没有健康节点
         if first_upstream == upstream then
-            log.warn("all upstream nodes is unhealth, use default")
+            log.error("all upstream nodes is unhealth, use default")
             -- 节点监控检查存在延迟，所以在没有健康节点情况下，还是返回 first_upstream
             -- 有可能节点已经恢复。还是尝试请求
             return parse_server(first_upstream)

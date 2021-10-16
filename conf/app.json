@@ -2,7 +2,7 @@
   "appName": "ws-cloud-gateway",
   "env": "test",
   "etcd": {
-    "http_host": "http://192.168.3.9:2379",
+    "http_host": "http://127.0.0.1:2379",
     "data_prefix": "/my/cloud/"
   },
   "plugins": [
@@ -32,7 +32,6 @@
   },
   "healthcheck": {
     "try_count": 3,
-    "try_code": [502, 503, 504],
     "active": {
       "type": "tcp",
       "timeout": 1,

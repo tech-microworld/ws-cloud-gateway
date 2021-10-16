@@ -47,27 +47,34 @@ function _M.do_in_rewrite(route)
     -- 放到var，accesslog中可以输出
     var.target_service_name = service_name
 
+    local node_list = discovery_stroe.find_node_list_by_cache(service_name, true)
+    if not node_list or #node_list == 0 then
+        log.error("server node not found: ", service_name)
+        return resp.exit(ngx.HTTP_BAD_GATEWAY)
+    end
+    api_ctx.node_list = node_list
+end
+
+function _M.do_in_balancer(route)
+    local api_ctx = ngx.ctx.api_ctx
+
     api_ctx.balancer_try_count = (api_ctx.balancer_try_count or 0) + 1
     local healthcheck = config_get("healthcheck")
-    log.notice("healthcheck config: ", json.delay_encode(healthcheck))
-
+    log.info("healthcheck config: ", json.delay_encode(healthcheck))
     -- 设置重试次数
     if healthcheck and healthcheck.try_count and healthcheck.try_count > 0 and api_ctx.balancer_try_count == 1 then
+        log.notice("set_more_tries: ", healthcheck.try_count)
         set_more_tries(healthcheck.try_count)
     end
 
-    local node_list = discovery_stroe.find_node_list_by_cache(service_name, true)
+    local service_name = route.service_name
+    local node_list = api_ctx.node_list
     local server, err = balancer.pick_server(service_name, node_list, api_ctx)
     if err then
         log.error("failed to pick server, err: ", err)
         return resp.exit(ngx.HTTP_BAD_GATEWAY)
     end
     api_ctx.balancer_server = server
-
-end
-
-function _M.do_in_balancer(route)
-    local api_ctx = ngx.ctx.api_ctx
 
     local server = api_ctx.balancer_server
     if not server then
@@ -77,7 +84,7 @@ function _M.do_in_balancer(route)
 
     api_ctx.balancer_host = server.host
     api_ctx.balancer_port = server.port
-    log.info("proxy request to ", server.host, ":", server.port)
+    log.info("balancer proxy request to ", server.host, ":", server.port)
     ngx_balancer.set_current_peer(server.host, server.port)
 end
 
