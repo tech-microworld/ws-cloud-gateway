@@ -15,7 +15,7 @@
 -- limitations under the License.
 --
 local ngx = ngx
-local ctx = require("app.core.ctx")
+local ctx = require("app.ctx")
 local core_table = require("app.core.table")
 local resp = require("app.core.response")
 local pairs = pairs

@@ -34,7 +34,9 @@ local _M = {
 }
 
 local function serialise_obj(data)
-    if type(data) == "function" or type(data) == "userdata" or type(data) == "cdata" or type(data) == "table" then
+    if type(data) == "function" or type(data) == "userdata"
+       or type(data) == "cdata"
+       or type(data) == "table" then
         return tostring(data)
     end
 

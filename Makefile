@@ -24,7 +24,6 @@ benchmark: start-background demo-server-start benchmark-wrk demo-server-stop sto
 init: default
 	@resty --errlog-level=error \
 	-I=./gateway \
-	-I=./gateway/app/init.lua \
 	-I=./deps/share/lua/5.1 \
 	-I=./deps/lib/lua/5.1 \
 	-I=./deps/lib64/lua/5.1 \
@@ -32,7 +31,6 @@ init: default
 
 	@resty --errlog-level=error \
 	-I=./gateway \
-	-I=./gateway/app/init.lua \
 	-I=./deps/share/lua/5.1 \
 	-I=./deps/lib/lua/5.1 \
 	-I=./deps/lib64/lua/5.1 \

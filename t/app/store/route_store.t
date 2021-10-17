@@ -20,7 +20,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: test etcd
+=== TEST 1: test etcd save
 --- config
     location = /save {
         content_by_lua_block {
@@ -31,7 +31,7 @@ __DATA__
             ngx.req.read_body()
             local data = ngx.req.get_body_data()
             local route = cjson.decode(data)
-            local err = route_store.save_route(route)
+            local _, err = route_store.save_route(route)
             check_res("ok", err, true)
         }
     }
@@ -40,23 +40,11 @@ __DATA__
         content_by_lua_block {
             local cjson = require "cjson"
             local log = require("app.core.log")
-            local router = require("app.core.router")
+            local router = require("app.router")
 
             local url = ngx.var.arg_url
             local route = router.match(url)
-            check_res(route and  route.prefix or "", nil, true)
-        }
-    }
-
-    location = /delete {
-        content_by_lua_block {
-            local cjson = require "cjson"
-            local log = require("app.core.log")
-            local route_store = require("app.store.route_store")
-
-            local route_prefix = ngx.var.arg_prefix
-            local err = route_store.remove_route(route_prefix)
-            check_res("ok", err, true)
+            check_res(route and route.prefix or "", nil, true)
         }
     }
 
@@ -79,7 +67,6 @@ __DATA__
     'GET /query?url=/openapi/demo/info',
     'POST /save
     {
-        "key": "/openapi/demo/*",
         "prefix": "/openapi/demo/*",
         "status": 0,
         "service_name": "demo",
@@ -91,16 +78,53 @@ __DATA__
         "props": {
         }
     }
-    ',
-    'GET /query?url=/openapi/demo/info',
-    'DELETE /delete?prefix=/openapi/demo/*'
+    '
 ]
 
 --- response_body eval
 [
     "ok\n",
     "/openapi/demo/*\n",
-    "ok\n",
-    "\n",
     "ok\n"
+]
+
+
+=== TEST 2: test etcd delete
+--- config
+    location = /query {
+        content_by_lua_block {
+            local cjson = require "cjson"
+            local log = require("app.core.log")
+            local router = require("app.router")
+
+            local url = ngx.var.arg_url
+            local route = router.match(url)
+            check_res(route and route.prefix or "", nil, true)
+        }
+    }
+
+    location = /delete {
+        content_by_lua_block {
+            local cjson = require "cjson"
+            local log = require("app.core.log")
+            local route_store = require("app.store.route_store")
+
+            local route_prefix = ngx.var.arg_prefix
+            log.info("arg route prefix: ", route_prefix)
+
+            local _, err = route_store.remove_route_by_prefix(route_prefix)
+            check_res("ok", err, true)
+        }
+    }
+
+--- pipelined_requests eval
+[
+    'DELETE /delete?prefix=/openapi/demo/*',
+    'GET /query?url=/openapi/demo/info'
+]
+
+--- response_body eval
+[
+    "ok\n",
+    "\n"
 ]

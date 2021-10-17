@@ -31,6 +31,7 @@ ngx.say("load data: " .. data_file)
 local datas = json.decode_json_file(data_file)
 
 for _, data in ipairs(datas) do
+    ngx.say("save_route: " .. json.encode(data))
     route_store.save_route(data)
 end
 

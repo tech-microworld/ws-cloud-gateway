@@ -16,14 +16,14 @@
 --
 local require = require
 local log = require("app.core.log")
-local dispatcher = require("app.core.dispatcher")
+local dispatcher = require("app.dispatcher")
 local call_utils = require("app.utils.call_utils")
 local pcall = pcall
 local pairs = pairs
 local ngx = ngx
 local config = require("app.config")
 local tab_nkeys = require("table.nkeys")
-local router = require("app.core.router")
+local router = require("app.router")
 
 local _M = {}
 
