@@ -62,7 +62,9 @@ function _M.do_in_balancer(route)
     local healthcheck = config_get("healthcheck")
     log.info("healthcheck config: ", json.delay_encode(healthcheck))
     -- 设置重试次数
-    if healthcheck and healthcheck.try_count and healthcheck.try_count > 0 and api_ctx.balancer_try_count == 1 then
+    if healthcheck and healthcheck.try_count
+        and healthcheck.try_count > 0
+        and api_ctx.balancer_try_count == 1 then
         log.notice("set_more_tries: ", healthcheck.try_count)
         set_more_tries(healthcheck.try_count)
     end

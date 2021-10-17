@@ -44,6 +44,8 @@ local function create_key(prefix)
     return str.md5(str.trim(prefix))
 end
 
+_M.create_key = create_key
+
 -- 构造路由前缀
 local function get_etcd_key(key)
     return str.join_str("", etcd_prefix, key)
@@ -140,6 +142,15 @@ local function remove_route(key)
 end
 
 _M.remove_route = remove_route
+
+-- 根据 url 前缀删除路由配置
+local function remove_route_by_prefix(prefix)
+    log.notice("remove route by prefix: ", prefix)
+    local key = create_key(prefix)
+    return remove_route(key)
+end
+
+_M.remove_route_by_prefix = remove_route_by_prefix
 
 -- 保存路由配置
 local function save_route(route)

@@ -118,7 +118,8 @@ _M.find_node_list = find_node_list
 
 -- 根据服务名查询在线服务节点
 local function find_node_list_by_cache(service_name, is_active)
-    local node_list = service_nodes_cache:fetch_cache(service_name, false, find_node_list, service_name)
+    local node_list = service_nodes_cache:fetch_cache(
+        service_name, false, find_node_list, service_name)
     if not is_active or not node_list then
         return node_list
     end
