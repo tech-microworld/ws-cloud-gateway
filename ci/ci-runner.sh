@@ -33,6 +33,7 @@ export_or_prefix() {
 }
 
 show_server_info() {
+    export_or_prefix
     lscpu
     free -h
 }
@@ -74,6 +75,7 @@ install_lua_deps() {
 }
 
 install_wrk() {
+    export_or_prefix
     git clone https://github.com/wg/wrk.git ${BUILD_DIR}/wrk
     cd ${BUILD_DIR}/wrk
     make
@@ -90,6 +92,7 @@ before_install() {
 }
 
 do_install() {
+    export_or_prefix
     wget -qO - https://openresty.org/package/pubkey.gpg | sudo apt-key add -
     sudo apt-get -y update --fix-missing
     sudo apt-get -y install software-properties-common
@@ -140,6 +143,7 @@ run_ci() {
 }
 
 after_success() {
+    export_or_prefix
     # cat luacov.stats.out
     # luacov-coveralls
     # cat logs/error.log
