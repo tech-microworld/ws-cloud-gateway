@@ -57,7 +57,6 @@ jobs:
           env:
             cache-name: cache-deps
           with:
-            path: deps
             path: |
               deps
               build-cache
