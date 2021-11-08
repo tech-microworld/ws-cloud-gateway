@@ -16,10 +16,11 @@
 #
 use t::CONFIG 'no_plan';
 
-no_long_string();
 repeat_each(1);
+no_long_string();
 no_shuffle();
-run_tests();
+
+run_tests;
 
 __DATA__
 
@@ -50,7 +51,6 @@ __DATA__
             check_res(route and route.prefix or "", nil, true)
         }
     }
-
 --- pipelined_requests eval
 [
     'POST /save
@@ -83,7 +83,6 @@ __DATA__
     }
     '
 ]
-
 --- response_body eval
 [
     "ok\n",
@@ -95,6 +94,20 @@ __DATA__
 
 === TEST 2: test etcd delete
 --- config
+    location = /save {
+        content_by_lua_block {
+            local cjson = require "cjson"
+            local log = require("app.core.log")
+            local route_store = require("app.store.route_store")
+
+            ngx.req.read_body()
+            local data = ngx.req.get_body_data()
+            local route = cjson.decode(data)
+            local _, err = route_store.save_route(route)
+            check_res("ok", err, true)
+        }
+    }
+
     location = /query {
         content_by_lua_block {
             local cjson = require "cjson"
@@ -120,13 +133,25 @@ __DATA__
             check_res("ok", err, true)
         }
     }
-
 --- pipelined_requests eval
 [
+    'POST /save
+    {
+        "prefix": "/openapi/demo/*",
+        "status": 0,
+        "service_name": "demo",
+        "protocol": "http",
+        "plugins": [
+            "discovery",
+            "tracing"
+        ],
+        "props": {
+        }
+    }
+    ',
     'DELETE /delete?prefix=/openapi/demo/*',
     'GET /query?url=/openapi/demo/info'
 ]
-
 --- response_body eval
 [
     "ok\n",
