@@ -64,13 +64,13 @@ jobs:
           run: sudo apt install -y cpanminus build-essential libncurses5-dev libreadline-dev libssl-dev perl libpcre3 libpcre3-dev libldap2-dev wget curl git
 
         - name: before_install
-          run: ./utils/ci-runner.sh before_install
+          run: ./ci/ci-runner.sh before_install
 
         - name: do_install
-          run: ./utils/ci-runner.sh do_install
+          run: ./ci/ci-runner.sh do_install
 
         - name: run_ci
-          run: ./utils/ci-runner.sh run_ci
+          run: ./ci/ci-runner.sh run_ci
 
         - name: after_success
-          run: ./utils/ci-runner.sh after_success
+          run: ./ci/ci-runner.sh after_success
