@@ -24,6 +24,7 @@ export_or_prefix() {
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
     export GO111MOUDULE=on
     export ETCDCTL_API=3
+    export BUILD_DIR=build-cache
     export ETCD_BUILD_DIR=build-cache/etcd
     export ETCD_BIN_DIR=${ETCD_BUILD_DIR}/bin
     echo $PATH
@@ -47,7 +48,7 @@ install_etcd() {
         GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
         DOWNLOAD_URL=${GITHUB_URL}
 
-        curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o ${BUILD_DIR}/etcd-${ETCD_VER}-linux-amd64.tar.gz
+        curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o ${ETCD_BUILD_DIR}/etcd-${ETCD_VER}-linux-amd64.tar.gz
         tar xzvf $ETCD_BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz -C ${ETCD_BIN_DIR} --strip-components=1
         rm -f $ETCD_BUILD_DIR/etcd-${ETCD_VER}-linux-amd64.tar.gz
     fi
@@ -60,6 +61,7 @@ install_etcd() {
 
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
+    echo "etcd installed"
 }
 
 install_lua_deps() {
@@ -68,7 +70,15 @@ install_lua_deps() {
 
     make deps
     luarocks install luacov-coveralls --tree=deps --local >build.log 2>&1 || (cat build.log && exit 1)
+    echo "deps installed"
+}
 
+install_wrk() {
+    git clone https://github.com/wg/wrk.git ${BUILD_DIR}/wrk
+    cd ${BUILD_DIR}/wrk
+    make
+    sudo cp wrk /usr/local/bin
+    echo "wrk installed"
 }
 
 before_install() {
@@ -115,7 +125,6 @@ do_install() {
 
     install_etcd
     install_lua_deps
-
 }
 
 run_ci() {

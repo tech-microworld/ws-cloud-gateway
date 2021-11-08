@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - debian-latest
+          - ubuntu-latest
         os_name:
           - linux_openresty
 
@@ -61,7 +61,7 @@ jobs:
             key: ${{ runner.os }}-${{ env.cache-name }}-${{ matrix.os_name }}-${{ hashFiles('rockspec/ws-cloud-gateway-master-0') }}
 
         - name: install dependencies
-          run: sudo apt install -y cpanminus build-essential libncurses5-dev libreadline-dev libssl-dev perl libpcre3 libpcre3-dev libldap2-dev wrk wget curl
+          run: sudo apt install -y cpanminus build-essential libncurses5-dev libreadline-dev libssl-dev perl libpcre3 libpcre3-dev libldap2-dev wget curl git
 
         - name: before_install
           run: ./utils/ci-runner.sh before_install
