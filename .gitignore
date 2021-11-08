@@ -13,6 +13,8 @@ deps
 .travis/
 !.travis/ASF-Release.cfg
 bin/lj-releng
+utils/lj-releng
+utils/reindex
 
 benchmark/out/
 !benchmark/server/conf/nginx.conf

@@ -100,15 +100,22 @@ test-core:
 ### utils:				安装lj-releng
 .PHONY: utils
 utils:
-ifeq ("$(wildcard bin/lj-releng)", "")
-	wget -O bin/lj-releng https://raw.githubusercontent.com/iresty/openresty-devel-utils/master/lj-releng
-	chmod a+x bin/lj-releng
+ifeq ("$(wildcard utils/lj-releng)", "")
+	wget -P utils https://raw.githubusercontent.com/iresty/openresty-devel-utils/master/lj-releng
+	chmod a+x utils/lj-releng
+endif
+ifeq ("$(wildcard utils/reindex)", "")
+	wget -P utils https://raw.githubusercontent.com/iresty/openresty-devel-utils/master/reindex
+	chmod a+x utils/reindex
 endif
 
 ### lint:				代码风格检查
 .PHONY: lint
 lint: utils
-	./bin/check-lua-code-style.sh
+	@$(call func_echo_status, "$@ -> [ Start ]")
+	./utils/check-lua-code-style.sh
+	./utils/check-test-code-style.sh
+	@$(call func_echo_success_status, "$@ -> [ Done ]")
 
 ### help:				Makefile帮助
 .PHONY: help
