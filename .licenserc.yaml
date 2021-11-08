@@ -21,6 +21,7 @@ header:
 
   paths-ignore:
     - '.gitignore'
+    - '.gitmodules'
     - '.editorconfig'
     - '.luacheckrc'
     - '.travis.yml'
@@ -37,5 +38,6 @@ header:
     - 'conf/**'
     - '**/*.md'
     - 'rockspec/'
+    - 'logs/'
 
   comment: on-failure
