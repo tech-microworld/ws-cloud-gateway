@@ -4,7 +4,7 @@ supported_platforms = {"linux", "macosx"}
 
 source = {
     url = "git@github.com:tech-microworld/ws-cloud-gateway.git",
-    branch = "v1.1",
+    branch = "master",
 }
 
 description = {
@@ -29,7 +29,20 @@ dependencies = {
 build = {
     type = "make",
     build_variables = {
+        CFLAGS="$(CFLAGS)",
+        LIBFLAG="$(LIBFLAG)",
+        LUA_LIBDIR="$(LUA_LIBDIR)",
+        LUA_BINDIR="$(LUA_BINDIR)",
+        LUA_INCDIR="$(LUA_INCDIR)",
+        LUA="$(LUA)",
+        OPENSSL_INCDIR="$(OPENSSL_INCDIR)",
+        OPENSSL_LIBDIR="$(OPENSSL_LIBDIR)",
     },
     install_variables = {
+        ENV_INST_PREFIX="$(PREFIX)",
+        ENV_INST_BINDIR="$(BINDIR)",
+        ENV_INST_LIBDIR="$(LIBDIR)",
+        ENV_INST_LUADIR="$(LUADIR)",
+        ENV_INST_CONFDIR="$(CONFDIR)",
     },
 }
