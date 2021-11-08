@@ -40,39 +40,39 @@ jobs:
         os_name:
           - linux_openresty
 
-  runs-on: ${{ matrix.platform }}
-  name: run fuzzing
-  runs-on: ubuntu-latest
-  timeout-minutes: 90
-  env:
-    SERVER_NAME: ${{ matrix.os_name }}
-    OPENRESTY_VERSION: default
+    runs-on: ${{ matrix.platform }}
+    name: run fuzzing
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      SERVER_NAME: ${{ matrix.os_name }}
+      OPENRESTY_VERSION: default
 
-  steps:
-      - name: Check out code
-        uses: actions/checkout@v2.4.0
-        with:
-          submodules: recursive
+    steps:
+        - name: Check out code
+          uses: actions/checkout@v2.4.0
+          with:
+            submodules: recursive
 
-      - name: Cache deps
-        uses: actions/cache@v2.1.6
-        env:
-          cache-name: cache-deps
-        with:
-          path: deps
-          key: ${{ runner.os }}-${{ env.cache-name }}-${{ matrix.os_name }}-${{ hashFiles('rockspec/ws-cloud-gateway-master-0') }}
+        - name: Cache deps
+          uses: actions/cache@v2.1.6
+          env:
+            cache-name: cache-deps
+          with:
+            path: deps
+            key: ${{ runner.os }}-${{ env.cache-name }}-${{ matrix.os_name }}-${{ hashFiles('rockspec/ws-cloud-gateway-master-0') }}
 
-      - name: install dependencies
-        run: sudo apt install -y cpanminus build-essential libncurses5-dev libreadline-dev libssl-dev perl libpcre3 libpcre3-dev libldap2-dev wrk wget curl
+        - name: install dependencies
+          run: sudo apt install -y cpanminus build-essential libncurses5-dev libreadline-dev libssl-dev perl libpcre3 libpcre3-dev libldap2-dev wrk wget curl
 
-      - name: before_install
-        run: ./utils/ci-runner.sh before_install
+        - name: before_install
+          run: ./utils/ci-runner.sh before_install
 
-      - name: do_install
-        run: ./utils/ci-runner.sh do_install
+        - name: do_install
+          run: ./utils/ci-runner.sh do_install
 
-      - name: run_ci
-        run: ./utils/ci-runner.sh run_ci
+        - name: run_ci
+          run: ./utils/ci-runner.sh run_ci
 
-      - name: after_success
-        run: ./utils/ci-runner.sh after_success
+        - name: after_success
+          run: ./utils/ci-runner.sh after_success
