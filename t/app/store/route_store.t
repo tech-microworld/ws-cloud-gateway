@@ -16,6 +16,9 @@
 #
 use t::CONFIG 'no_plan';
 
+no_long_string();
+repeat_each(1);
+no_shuffle();
 run_tests();
 
 __DATA__

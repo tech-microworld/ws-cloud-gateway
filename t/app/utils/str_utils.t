@@ -17,6 +17,9 @@
 #
 use t::BASE 'no_plan';
 
+repeat_each(1);
+no_long_string();
+no_root_location();
 run_tests();
 
 __DATA__
