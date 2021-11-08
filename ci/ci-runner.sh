@@ -55,20 +55,19 @@ install_etcd() {
     ${ETCD_BIN_DIR}/etcd --version
     ${ETCD_BIN_DIR}/etcdctl version
     # start etcd server
-    nohup ${ETCD_BIN_DIR}/etcd > etcd.log 2>&1 &
+    nohup ${ETCD_BIN_DIR}/etcd >etcd.log 2>&1 &
     sleep 3
 
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
 }
 
-
 install_lua_deps() {
     export_or_prefix
     echo "install lua deps"
 
     make deps
-    luarocks install luacov-coveralls --tree=deps --local > build.log 2>&1 || (cat build.log && exit 1)
+    luarocks install luacov-coveralls --tree=deps --local >build.log 2>&1 || (cat build.log && exit 1)
 
 }
 
@@ -107,19 +106,19 @@ do_install() {
         cd ..
     fi
     cd build-cache/${luarocks_version}
-    ./configure --prefix=/usr > build.log 2>&1 || (cat build.log && exit 1)
-    make build > build.log 2>&1 || (cat build.log && exit 1)
-    sudo make install > build.log 2>&1 || (cat build.log && exit 1)
+    ./configure --prefix=/usr >build.log 2>&1 || (cat build.log && exit 1)
+    make build >build.log 2>&1 || (cat build.log && exit 1)
+    sudo make install >build.log 2>&1 || (cat build.log && exit 1)
     cd ../../
 
-    sudo luarocks install luacheck > build.log 2>&1 || (cat build.log && exit 1)
+    sudo luarocks install luacheck >build.log 2>&1 || (cat build.log && exit 1)
 
     install_etcd
     install_lua_deps
 
 }
 
-script() {
+run_ci() {
     export_or_prefix
 
     make clean
@@ -146,8 +145,8 @@ before_install)
 do_install)
     do_install "$@"
     ;;
-script)
-    script "$@"
+run_ci)
+    run_ci "$@"
     ;;
 after_success)
     after_success "$@"
