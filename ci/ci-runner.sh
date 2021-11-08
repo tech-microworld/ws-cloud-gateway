@@ -138,8 +138,16 @@ run_ci() {
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
 
     make clean
-    make test-store || cat t/servroot/logs/error.log
-    make verify
+    make test-store || (
+        cat t/servroot/logs/access.log
+        cat t/servroot/logs/error.log
+        exit 1
+    )
+    make verify || (
+        cat t/servroot/logs/access.log
+        cat t/servroot/logs/error.log
+        exit 1
+    )
     sleep 1
     make benchmark
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get '/my/cloud' --prefix
