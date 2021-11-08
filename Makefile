@@ -2,6 +2,7 @@ gateway_config_file ?= conf/app.json
 export BASE_DIR := $(shell pwd)
 export gateway_config_file := ${BASE_DIR}/${gateway_config_file}
 OR_EXEC ?= $(shell which openresty)
+export LUAJIT_DIR ?= $(shell ${OR_EXEC} -V 2>&1 | grep prefix | grep -Eo 'prefix=(.*)/nginx\s+--' | grep -Eo '/.*/')luajit
 LUAROCKS_VER ?= $(shell luarocks --version | grep -E -o  "luarocks [0-9]+.")
 
 .PHONY: default
@@ -12,8 +13,6 @@ ifeq ("$(wildcard /usr/local/openresty-debug/bin/openresty)", "")
 	exit 1
 endif
 endif
-
-LUAJIT_DIR ?= $(shell ${OR_EXEC} -V 2>&1 | grep prefix | grep -Eo 'prefix=(.*)/nginx\s+--' | grep -Eo '/.*/')luajit
 
 verify: lint license-check test
 ### benchmark:			执行压力测试
