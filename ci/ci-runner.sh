@@ -138,6 +138,7 @@ run_ci() {
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
 
     make clean
+    make test-store
     make verify
     sleep 1
     make benchmark
