@@ -82,6 +82,7 @@ install_wrk() {
 }
 
 before_install() {
+    export_or_prefix
     mkdir -p ${BUILD_DIR}
     show_server_info
     sudo cpanm --notest Test::Nginx >build.log 2>&1 || (cat build.log && exit 1)
