@@ -25,7 +25,7 @@ export_or_prefix() {
     export GO111MOUDULE=on
     export ETCDCTL_API=3
     export BUILD_DIR=build-cache
-    export ETCD_BUILD_DIR=build-cache/etcd
+    export ETCD_BUILD_DIR=${BUILD_DIR}/etcd
     export ETCD_BIN_DIR=${ETCD_BUILD_DIR}/bin
     echo $PATH
     echo $GOPATH
@@ -82,6 +82,7 @@ install_wrk() {
 }
 
 before_install() {
+    mkdir -p ${BUILD_DIR}
     show_server_info
     sudo cpanm --notest Test::Nginx >build.log 2>&1 || (cat build.log && exit 1)
     sleep 1
@@ -97,25 +98,25 @@ do_install() {
     sudo apt-get install openresty-debug openresty-resty golang-go
 
     lua_version=lua-5.3.5
-    if [ ! -f "build-cache/${lua_version}" ]; then
-        cd build-cache
+    if [ ! -f "${BUILD_DIR}/${lua_version}" ]; then
+        cd ${BUILD_DIR}
         curl -R -O http://www.lua.org/ftp/${lua_version}.tar.gz
         tar -zxf ${lua_version}.tar.gz
         cd ..
     fi
-    cd build-cache/${lua_version}
+    cd ${BUILD_DIR}/${lua_version}
     make linux test
     sudo make install
     cd ../../
 
     luarocks_version=luarocks-3.3.1
-    if [ ! -f "build-cache/${luarocks_version}" ]; then
-        cd build-cache
+    if [ ! -f "${BUILD_DIR}/${luarocks_version}" ]; then
+        cd ${BUILD_DIR}
         wget https://luarocks.org/releases/${luarocks_version}.tar.gz
         tar zxpf ${luarocks_version}.tar.gz
         cd ..
     fi
-    cd build-cache/${luarocks_version}
+    cd ${BUILD_DIR}/${luarocks_version}
     ./configure --prefix=/usr >build.log 2>&1 || (cat build.log && exit 1)
     make build >build.log 2>&1 || (cat build.log && exit 1)
     sudo make install >build.log 2>&1 || (cat build.log && exit 1)
