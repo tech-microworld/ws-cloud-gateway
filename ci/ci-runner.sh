@@ -134,6 +134,8 @@ do_install() {
 
 run_ci() {
     export_or_prefix
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 put foo bar
+    ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
 
     make clean
     make verify
