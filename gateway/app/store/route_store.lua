@@ -82,9 +82,10 @@ _M.query_list = query_list
 local function query_enable_routers()
     local list, err = query_list()
     if not list or tab_nkeys(list) < 1 then
+        log.notice("routers is empty")
         return nil, err
     end
-
+    log.debug("query enable routers: ", json.delay_encode(list))
     local routes = {}
     for _, route in ipairs(list) do
         if route.status == 1 then
