@@ -25,6 +25,7 @@ on:
       - release/**
       - feature/**
       - hotfix/**
+
   pull_request:
     branches:
       - master
