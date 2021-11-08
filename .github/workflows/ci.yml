@@ -41,8 +41,6 @@ jobs:
           - linux_openresty
 
     runs-on: ${{ matrix.platform }}
-    name: run fuzzing
-    runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
       SERVER_NAME: ${{ matrix.os_name }}
