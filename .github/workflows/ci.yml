@@ -60,6 +60,7 @@ jobs:
             path: |
               deps
               build-cache
+              .tools
             key: ${{ runner.os }}-${{ env.cache-name }}-${{ matrix.os_name }}-${{ hashFiles('rockspec/ws-cloud-gateway-master-0') }}
 
         - name: install dependencies

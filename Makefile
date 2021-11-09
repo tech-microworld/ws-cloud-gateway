@@ -129,8 +129,8 @@ help: default
 license-tool:
 ifeq ("$(wildcard .tools/openwhisk-utilities/scancode/scanCode.py)", "")
 	git clone https://github.com/tech-microworld/openwhisk-utilities.git .tools/openwhisk-utilities
-	cp .tools/ASF* .tools/openwhisk-utilities/scancode/
 endif
+	@cp .tools/ASF* .tools/openwhisk-utilities/scancode/
 
 ### license-check:			源码检查是否包含 license header
 license-check: license-tool

@@ -20,10 +20,7 @@
 set -ex
 
 export_or_prefix() {
-    export ROOT=$(
-        cd $(dirname $0)
-        pwd
-    )
+    export ROOT=$(pwd)
     export OPENRESTY_PREFIX="/usr/local/openresty-debug"
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
     export GO111MOUDULE=on
@@ -84,10 +81,11 @@ install_wrk() {
         git clone https://github.com/wg/wrk.git ${BUILD_DIR}/wrk
         cd ${BUILD_DIR}/wrk
         make
-        cd ../../
+        cd ${ROOT}
     fi
     cd ${BUILD_DIR}/wrk
     sudo cp wrk /usr/local/bin
+    cd ${ROOT}
     echo "wrk installed"
 }
 
@@ -114,12 +112,12 @@ do_install() {
         cd ${BUILD_DIR}
         curl -R -O http://www.lua.org/ftp/${lua_version}.tar.gz
         tar -zxf ${lua_version}.tar.gz
-        cd ..
+        cd ${ROOT}
     fi
     cd ${BUILD_DIR}/${lua_version}
     make linux test
     sudo make install
-    cd ../../
+    cd ${ROOT}
 
     luarocks_version=luarocks-3.3.1
     if [ ! -f "${BUILD_DIR}/${luarocks_version}" ]; then
@@ -132,7 +130,7 @@ do_install() {
     ./configure --prefix=/usr >build.log 2>&1 || (cat build.log && exit 1)
     make build >build.log 2>&1 || (cat build.log && exit 1)
     sudo make install >build.log 2>&1 || (cat build.log && exit 1)
-    cd ../../
+    cd ${ROOT}
 
     sudo luarocks install luacheck >build.log 2>&1 || (cat build.log && exit 1)
 
@@ -147,11 +145,11 @@ run_ci() {
     ${ETCD_BIN_DIR}/etcdctl --endpoints=localhost:2379 get foo
 
     make clean
-    make test-store || (
-        cat t/servroot/logs/access.log
-        cat t/servroot/logs/error.log
-        exit 1
-    )
+    # make test-store || (
+    #     cat t/servroot/logs/access.log
+    #     cat t/servroot/logs/error.log
+    #     exit 1
+    # )
     make verify || (
         cat t/servroot/logs/access.log
         cat t/servroot/logs/error.log
