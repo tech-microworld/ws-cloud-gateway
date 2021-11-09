@@ -135,20 +135,6 @@ __DATA__
     }
 --- pipelined_requests eval
 [
-    'POST /save
-    {
-        "prefix": "/openapi/demo/*",
-        "status": 0,
-        "service_name": "demo",
-        "protocol": "http",
-        "plugins": [
-            "discovery",
-            "tracing"
-        ],
-        "props": {
-        }
-    }
-    ',
     'DELETE /delete?prefix=/openapi/demo/*',
     'GET /query?url=/openapi/demo/info'
 ]
