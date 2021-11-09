@@ -130,6 +130,7 @@ do_install() {
 
     install_etcd
     install_lua_deps
+    install_wrk
 }
 
 run_ci() {

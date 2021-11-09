@@ -127,36 +127,36 @@ help: default
 .PHONY: license-tool
 ### license-tool:			安装源码检测工具 openwhisk-utilities，校验license header
 license-tool:
-ifeq ("$(wildcard .travis/openwhisk-utilities/scancode/scanCode.py)", "")
-	git clone https://github.com/tech-microworld/openwhisk-utilities.git .travis/openwhisk-utilities
-	cp .travis/ASF* .travis/openwhisk-utilities/scancode/
+ifeq ("$(wildcard .tools/openwhisk-utilities/scancode/scanCode.py)", "")
+	git clone https://github.com/tech-microworld/openwhisk-utilities.git .tools/openwhisk-utilities
+	cp .tools/ASF* .tools/openwhisk-utilities/scancode/
 endif
 
 ### license-check:			源码检查是否包含 license header
 license-check: license-tool
-	.travis/openwhisk-utilities/scancode/scanCode.py --config .travis/ASF-Release.cfg .
+	.tools/openwhisk-utilities/scancode/scanCode.py --config .tools/ASF-Release.cfg .
 
 ### license-header:			自动给源码增加 license header
 license-header: license-tool
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./gateway -f '*.lua' -t ASFLicenseHeaderLua.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./init -f '*.lua' -t ASFLicenseHeaderLua.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.pm' -t ASFLicenseHeaderBash.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.t' -t ASFLicenseHeaderBash.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./bin -f '*.sh' -t ASFLicenseHeaderBash.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./benchmark -f '*.sh' -t ASFLicenseHeaderBash.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./utils -f '*.sh' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./gateway -f '*.lua' -t ASFLicenseHeaderLua.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./init -f '*.lua' -t ASFLicenseHeaderLua.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.pm' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.t' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./bin -f '*.sh' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./benchmark -f '*.sh' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./utils -f '*.sh' -t ASFLicenseHeaderBash.txt
 
 .PHONY: benchmark
 ### benchmark-tool:			安装 benchmark 工具
 benchmark-tool:
-ifeq ("$(wildcard .travis/stapxx/samples/lj-lua-stacks.sxx)", "")
-	git clone https://github.com/openresty/stapxx.git .travis/stapxx
+ifeq ("$(wildcard .tools/stapxx/samples/lj-lua-stacks.sxx)", "")
+	git clone https://github.com/openresty/stapxx.git .tools/stapxx
 endif
-ifeq ("$(wildcard .travis/FlameGraph/flamegraph.pl)", "")
-	git clone https://github.com/brendangregg/FlameGraph.git .travis/FlameGraph
+ifeq ("$(wildcard .tools/FlameGraph/flamegraph.pl)", "")
+	git clone https://github.com/brendangregg/FlameGraph.git .tools/FlameGraph
 endif
-ifeq ("$(wildcard .travis/openresty-systemtap-toolkit/fix-lua-bt)", "")
-	git clone https://github.com/openresty/openresty-systemtap-toolkit.git .travis/openresty-systemtap-toolkit
+ifeq ("$(wildcard .tools/openresty-systemtap-toolkit/fix-lua-bt)", "")
+	git clone https://github.com/openresty/openresty-systemtap-toolkit.git .tools/openresty-systemtap-toolkit
 endif
 
 ### benchmark-wrk:			wrk 压力测试
