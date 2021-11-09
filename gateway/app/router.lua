@@ -53,6 +53,9 @@ end
 -- 匹配路由
 function _M.match(url)
     local rx = radix_cache:fetch_cache(rx_key, false, create_rx)
+    if not rx then
+        return nil
+    end
     local route = rx:match(url)
     log.info("match route: ", json.delay_encode({url, route}))
     return route
