@@ -10,9 +10,10 @@ t/servroot
 conf/app-dev.json
 deps
 
-.travis/
-!.travis/ASF-Release.cfg
-bin/lj-releng
+.tools/
+!.tools/ASF-Release.cfg
+utils/lj-releng
+utils/reindex
 
 benchmark/out/
 !benchmark/server/conf/nginx.conf

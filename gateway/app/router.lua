@@ -21,6 +21,7 @@ local lrucache = require("app.core.lrucache")
 local radixtree = require("resty.radixtree")
 local json = require("app.core.json")
 local route_store = require("app.store.route_store")
+local tab_nkeys = require("table.nkeys")
 
 local _M = {}
 
@@ -28,7 +29,11 @@ local radix_cache = lrucache.new({ttl = 60, count = 1})
 local rx_key = "router.rx"
 
 local function create_rx()
-    local routes = route_store.query_enable_routers()
+    local routes, err = route_store.query_enable_routers()
+    if not routes or tab_nkeys(routes) < 1 then
+        log.notice("routers is empty")
+        return nil, err
+    end
     log.info("routes: ", json.delay_encode(routes))
 
     local mapping = {}
@@ -48,6 +53,9 @@ end
 -- 匹配路由
 function _M.match(url)
     local rx = radix_cache:fetch_cache(rx_key, false, create_rx)
+    if not rx then
+        return nil
+    end
     local route = rx:match(url)
     log.info("match route: ", json.delay_encode({url, route}))
     return route

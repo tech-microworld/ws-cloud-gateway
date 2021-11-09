@@ -116,7 +116,8 @@ end
 -- 查询服务节点
 function _M.pick_server(service_name, node_list, api_ctx)
     local nodes_count = node_list and #node_list or 0
-    log.alert("service nodes: ", service_name, ", ", json.delay_encode(node_list), ", ", nodes_count)
+    log.alert("service nodes: ", service_name, ", ", json.delay_encode(node_list)
+                    , ", ", nodes_count)
     if nodes_count == 0 then
         return nil, "no valid upstream node"
     end
@@ -132,7 +133,8 @@ function _M.pick_server(service_name, node_list, api_ctx)
         local state, code = get_last_failure()
         local host = api_ctx.last_balancer_host
         local port = api_ctx.last_balancer_port
-        log.error("report server status: ", service_name, ", ", host, ", ", port, ", ", state, ", ", code)
+        log.error("report server status: ", service_name, ", ", host, ", ", port, ", "
+                , state, ", ", code)
         healthcheck.report(service_name, host, port, state, code)
     end
 
@@ -153,7 +155,8 @@ function _M.pick_server(service_name, node_list, api_ctx)
             return nil, err
         end
         -- 当前节点是否正常
-        ok = healthcheck.get_target_status(service_name, upstream_addr.host, upstream_addr.port, node_list)
+        ok = healthcheck.get_target_status(service_name, upstream_addr.host,
+                upstream_addr.port, node_list)
         if ok then
             return parse_server(upstream)
         end
@@ -164,10 +167,10 @@ function _M.pick_server(service_name, node_list, api_ctx)
             index = index + 1
         end
         log.info("upstream check: ", first_upstream, ", ", upstream, ", ", index)
-        -- 下一个节点和第一个节点相同，说明已经遍历完，已经没有健康节点
+        -- 下一个节点和第一个节点相同，说明已经遍历完，没有健康节点
         if first_upstream == upstream then
             log.error("all upstream nodes is unhealth, use default")
-            -- 节点监控检查存在延迟，所以在没有健康节点情况下，还是返回 first_upstream
+            -- 没有健康节点情况下，还是返回 first_upstream
             -- 有可能节点已经恢复。还是尝试请求
             return parse_server(first_upstream)
         end

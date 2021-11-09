@@ -84,7 +84,6 @@ local function query_enable_routers()
     if not list or tab_nkeys(list) < 1 then
         return nil, err
     end
-
     local routes = {}
     for _, route in ipairs(list) do
         if route.status == 1 then

@@ -21,7 +21,7 @@ set -ex
 
 luacheck -q gateway
 
-./bin/lj-releng \
+./utils/lj-releng \
     gateway/admin/*.lua \
     gateway/app/core/*.lua \
     gateway/app/plugins/*.lua \
@@ -29,7 +29,7 @@ luacheck -q gateway
     gateway/app/utils/*.lua > \
     /tmp/check.log 2>&1 || (cat /tmp/check.log && exit 1)
 
-grep -E "ERROR.*.lua:" /tmp/check.log > /tmp/error.log | true
+grep -E "ERROR.*.lua:" /tmp/check.log >/tmp/error.log | true
 if [ -s /tmp/error.log ]; then
     echo "=====bad style====="
     cat /tmp/check.log

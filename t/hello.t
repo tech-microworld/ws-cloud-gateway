@@ -28,6 +28,7 @@ __DATA__
 ['ws-cloud-gateway']
 
 
+
 === TEST 2: discard body
 --- config
     location = /foo {

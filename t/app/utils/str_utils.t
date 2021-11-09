@@ -17,6 +17,9 @@
 #
 use t::BASE 'no_plan';
 
+repeat_each(1);
+no_long_string();
+no_root_location();
 run_tests();
 
 __DATA__
@@ -36,6 +39,7 @@ GET /t?str=/open/api/user/info
 /open/api/user
 
 
+
 === TEST 2: test last_index_of
 --- config
     location = /t {
@@ -50,6 +54,8 @@ GET /t?str=/open/api/user/info
 --- response_body
 15
 
+
+
 === TEST 3: test substr_after_last
 --- config
     location = /t {
@@ -63,6 +69,8 @@ GET /t?str=/open/api/user/info
 GET /t?str=/open/api/user
 --- response_body
 user
+
+
 
 === TEST 4: test trim
 --- config
@@ -82,6 +90,8 @@ user
 --- response_body eval
 ['aa', '']
 
+
+
 === TEST 5: test is_blank
 --- config
     location = /t {
@@ -99,6 +109,7 @@ user
 
 --- response_body eval
 ['false', 'true']
+
 
 
 === TEST 6: test split

@@ -62,7 +62,7 @@ function _M.get_dispatcher()
     local ctx_dispatcher = ngx_ctx.dispatcher
     if not ctx_dispatcher then
         local route = router.match(ngx.var.uri)
-        if not route then
+        if not route or tab_nkeys(route.plugins) == 0 then
             route = {
                 prefix = ngx.var.uri,
                 status = 1,
@@ -72,10 +72,6 @@ function _M.get_dispatcher()
                     "default"
                 }
             }
-        end
-
-        if not route or tab_nkeys(route.plugins) == 0 then
-            route.plugins = {"default"}
         end
 
         local dispatcher_plugins = {}

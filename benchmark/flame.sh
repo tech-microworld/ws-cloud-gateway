@@ -17,14 +17,13 @@
 # limitations under the License.
 #
 
-
 home=$(dirname $(pwd))
 
 echo $home
 
-stapxx_home=$home/.travis/stapxx
-flame_graph_home=$home/.travis/FlameGraph
-toolkit_home=$home/.travis/openresty-systemtap-toolkit
+stapxx_home=$home/.tools/stapxx
+flame_graph_home=$home/.tools/FlameGraph
+toolkit_home=$home/.tools/openresty-systemtap-toolkit
 
 export PATH=${stapxx_home}:${flame_graph_home}:${toolkit_home}:$PATH
 
@@ -34,13 +33,12 @@ out=out
 
 mkdir -p $out
 
-$stapxx_home/samples/lj-lua-stacks.sxx --arg time=5  --skip-badvars -x $pid > $out/tmp.bt
+$stapxx_home/samples/lj-lua-stacks.sxx --arg time=5 --skip-badvars -x $pid >$out/tmp.bt
 # 处理 lj-lua-stacks.sxx 的输出，使其可读性更佳
-$toolkit_home/fix-lua-bt $out/tmp.bt > $out/flame.bt
+$toolkit_home/fix-lua-bt $out/tmp.bt >$out/flame.bt
 
-$flame_graph_home/stackcollapse-stap.pl $out/flame.bt > $out/flame.cbt
+$flame_graph_home/stackcollapse-stap.pl $out/flame.bt >$out/flame.cbt
 
 $flame_graph_home/flamegraph.pl --encoding="ISO-8859-1" \
-              --title="Lua-land on-CPU flamegraph" \
-              $out/flame.cbt > $out/flame.svg
-
+    --title="Lua-land on-CPU flamegraph" \
+    $out/flame.cbt >$out/flame.svg

@@ -1,0 +1,79 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+name: CI runner
+
+on:
+  push:
+    branches:
+      - master
+      - release/**
+      - feature/**
+      - hotfix/**
+
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - ubuntu-latest
+        os_name:
+          - linux_openresty
+
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 90
+    env:
+      SERVER_NAME: ${{ matrix.os_name }}
+      OPENRESTY_VERSION: default
+
+    steps:
+        - name: Check out code
+          uses: actions/checkout@v2.4.0
+          with:
+            submodules: recursive
+
+        - name: Cache deps
+          uses: actions/cache@v2.1.6
+          env:
+            cache-name: cache-deps
+          with:
+            path: |
+              deps
+              build-cache
+              .tools
+            key: ${{ runner.os }}-${{ env.cache-name }}-${{ matrix.os_name }}-${{ hashFiles('rockspec/ws-cloud-gateway-master-0') }}
+
+        - name: install dependencies
+          run: sudo apt install -y cpanminus build-essential libncurses5-dev libreadline-dev libssl-dev perl libpcre3 libpcre3-dev libldap2-dev wget curl git
+
+        - name: before_install
+          run: ./.ci/ci-runner.sh before_install
+
+        - name: do_install
+          run: ./.ci/ci-runner.sh do_install
+
+        - name: run_ci
+          run: ./.ci/ci-runner.sh run_ci
+
+        - name: after_success
+          run: ./.ci/ci-runner.sh after_success

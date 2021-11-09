@@ -2,6 +2,7 @@ gateway_config_file ?= conf/app.json
 export BASE_DIR := $(shell pwd)
 export gateway_config_file := ${BASE_DIR}/${gateway_config_file}
 OR_EXEC ?= $(shell which openresty)
+export LUAJIT_DIR ?= $(shell ${OR_EXEC} -V 2>&1 | grep prefix | grep -Eo 'prefix=(.*)/nginx\s+--' | grep -Eo '/.*/')luajit
 LUAROCKS_VER ?= $(shell luarocks --version | grep -E -o  "luarocks [0-9]+.")
 
 .PHONY: default
@@ -12,8 +13,6 @@ ifeq ("$(wildcard /usr/local/openresty-debug/bin/openresty)", "")
 	exit 1
 endif
 endif
-
-LUAJIT_DIR ?= $(shell ${OR_EXEC} -V 2>&1 | grep prefix | grep -Eo 'prefix=(.*)/nginx\s+--' | grep -Eo '/.*/')luajit
 
 verify: lint license-check test
 ### benchmark:			执行压力测试
@@ -100,15 +99,22 @@ test-core:
 ### utils:				安装lj-releng
 .PHONY: utils
 utils:
-ifeq ("$(wildcard bin/lj-releng)", "")
-	wget -O bin/lj-releng https://raw.githubusercontent.com/iresty/openresty-devel-utils/master/lj-releng
-	chmod a+x bin/lj-releng
+ifeq ("$(wildcard utils/lj-releng)", "")
+	wget -P utils https://raw.githubusercontent.com/iresty/openresty-devel-utils/master/lj-releng
+	chmod a+x utils/lj-releng
+endif
+ifeq ("$(wildcard utils/reindex)", "")
+	wget -P utils https://raw.githubusercontent.com/iresty/openresty-devel-utils/master/reindex
+	chmod a+x utils/reindex
 endif
 
 ### lint:				代码风格检查
 .PHONY: lint
 lint: utils
-	./bin/check-lua-code-style.sh
+	@$(call func_echo_status, "$@ -> [ Start ]")
+	./utils/check-lua-code-style.sh
+	./utils/check-test-code-style.sh
+	@$(call func_echo_success_status, "$@ -> [ Done ]")
 
 ### help:				Makefile帮助
 .PHONY: help
@@ -121,35 +127,36 @@ help: default
 .PHONY: license-tool
 ### license-tool:			安装源码检测工具 openwhisk-utilities，校验license header
 license-tool:
-ifeq ("$(wildcard .travis/openwhisk-utilities/scancode/scanCode.py)", "")
-	git clone https://github.com/tech-microworld/openwhisk-utilities.git .travis/openwhisk-utilities
-	cp .travis/ASF* .travis/openwhisk-utilities/scancode/
+ifeq ("$(wildcard .tools/openwhisk-utilities/scancode/scanCode.py)", "")
+	git clone https://github.com/tech-microworld/openwhisk-utilities.git .tools/openwhisk-utilities
 endif
+	@cp .tools/ASF* .tools/openwhisk-utilities/scancode/
 
 ### license-check:			源码检查是否包含 license header
 license-check: license-tool
-	.travis/openwhisk-utilities/scancode/scanCode.py --config .travis/ASF-Release.cfg .
+	.tools/openwhisk-utilities/scancode/scanCode.py --config .tools/ASF-Release.cfg .
 
 ### license-header:			自动给源码增加 license header
 license-header: license-tool
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./gateway -f '*.lua' -t ASFLicenseHeaderLua.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./init -f '*.lua' -t ASFLicenseHeaderLua.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.pm' -t ASFLicenseHeaderBash.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.t' -t ASFLicenseHeaderBash.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./bin -f '*.sh' -t ASFLicenseHeaderBash.txt
-	sh .travis/openwhisk-utilities/scancode/add-license-header.sh -d ./benchmark -f '*.sh' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./gateway -f '*.lua' -t ASFLicenseHeaderLua.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./init -f '*.lua' -t ASFLicenseHeaderLua.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.pm' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./t -f '*.t' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./bin -f '*.sh' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./benchmark -f '*.sh' -t ASFLicenseHeaderBash.txt
+	sh .tools/openwhisk-utilities/scancode/add-license-header.sh -d ./utils -f '*.sh' -t ASFLicenseHeaderBash.txt
 
 .PHONY: benchmark
 ### benchmark-tool:			安装 benchmark 工具
 benchmark-tool:
-ifeq ("$(wildcard .travis/stapxx/samples/lj-lua-stacks.sxx)", "")
-	git clone https://github.com/openresty/stapxx.git .travis/stapxx
+ifeq ("$(wildcard .tools/stapxx/samples/lj-lua-stacks.sxx)", "")
+	git clone https://github.com/openresty/stapxx.git .tools/stapxx
 endif
-ifeq ("$(wildcard .travis/FlameGraph/flamegraph.pl)", "")
-	git clone https://github.com/brendangregg/FlameGraph.git .travis/FlameGraph
+ifeq ("$(wildcard .tools/FlameGraph/flamegraph.pl)", "")
+	git clone https://github.com/brendangregg/FlameGraph.git .tools/FlameGraph
 endif
-ifeq ("$(wildcard .travis/openresty-systemtap-toolkit/fix-lua-bt)", "")
-	git clone https://github.com/openresty/openresty-systemtap-toolkit.git .travis/openresty-systemtap-toolkit
+ifeq ("$(wildcard .tools/openresty-systemtap-toolkit/fix-lua-bt)", "")
+	git clone https://github.com/openresty/openresty-systemtap-toolkit.git .tools/openresty-systemtap-toolkit
 endif
 
 ### benchmark-wrk:			wrk 压力测试

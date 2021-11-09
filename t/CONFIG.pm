@@ -27,6 +27,7 @@ no_long_string();
 no_root_location();
 no_shuffle();
 worker_connections(128);
+master_on();
 
 my $app_home = cwd();
 my $config_file = $ENV{'gateway_config_file'} || "$app_home/conf/app.json";

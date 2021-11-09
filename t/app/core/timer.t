@@ -54,6 +54,7 @@ qr/(job enter\njob exit)+/
 --- timeout: 5
 
 
+
 === TEST 2: timer every
 --- config
     location /t {
@@ -83,4 +84,3 @@ qr/job (enter|exit)/
 --- grep_error_log_out eval
 qr/(job enter\njob exit)+/
 --- timeout: 8
-
