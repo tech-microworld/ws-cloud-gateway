@@ -53,10 +53,12 @@ local function create_checker(service_name, node_list)
     )
     for _, node in ipairs(node_list) do
         local upstream_arr = str.split(node.upstream, ":")
-        log.alert("create and add_target: ", json.delay_encode({service_name, upstream_arr[1], upstream_arr[2]}))
+        log.alert("create and add_target: ", json.delay_encode({service_name,
+                upstream_arr[1], upstream_arr[2]}))
         local ok, err = checker:add_target(upstream_arr[1], upstream_arr[2], service_name, true)
         if not ok then
-            log.error("failed to add health check target: ", upstream_arr[1], ":", upstream_arr[2], " err: ", err)
+            log.error("failed to add health check target: ", upstream_arr[1]
+                    , ":", upstream_arr[2], " err: ", err)
         end
     end
     log.notice("create checker: ", service_name, " - ", tostring(checker))
@@ -64,7 +66,8 @@ local function create_checker(service_name, node_list)
 end
 
 local function fetch_healthchecker(service_name, node_list)
-    return lrucache_checker:fetch_cache(service_name, false, create_checker, service_name, node_list)
+    return lrucache_checker:fetch_cache(service_name, false, create_checker,
+            service_name, node_list)
 end
 
 -- 添加 upstream 到健康检查

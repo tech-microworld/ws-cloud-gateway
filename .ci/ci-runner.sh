@@ -20,6 +20,10 @@
 set -ex
 
 export_or_prefix() {
+    export ROOT=$(
+        cd $(dirname $0)
+        pwd
+    )
     export OPENRESTY_PREFIX="/usr/local/openresty-debug"
     export PATH=$OPENRESTY_PREFIX/nginx/sbin:$OPENRESTY_PREFIX/luajit/bin:$OPENRESTY_PREFIX/bin:$PATH
     export GO111MOUDULE=on
@@ -76,9 +80,13 @@ install_lua_deps() {
 
 install_wrk() {
     export_or_prefix
-    git clone https://github.com/wg/wrk.git ${BUILD_DIR}/wrk
+    if [ ! -f "${BUILD_DIR}/${lua_version}" ]; then
+        git clone https://github.com/wg/wrk.git ${BUILD_DIR}/wrk
+        cd ${BUILD_DIR}/wrk
+        make
+        cd ../../
+    fi
     cd ${BUILD_DIR}/wrk
-    make
     sudo cp wrk /usr/local/bin
     echo "wrk installed"
 }
