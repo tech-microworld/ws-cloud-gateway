@@ -58,13 +58,6 @@ local function is_exsit_by_key(key)
     return not err and res.body.kvs and tab_nkeys(res.body.kvs) > 0
 end
 
-_M.is_exsit_by_key = is_exsit_by_key
-
--- 路由配置是否存在
-local function is_exsit_by_prefix(prefix)
-    return is_exsit_by_key(create_key(prefix))
-end
-
 -- 查询所有路由配置，返回 list
 local function query_list()
     local resp, err = etcd.readdir(etcd_prefix)
