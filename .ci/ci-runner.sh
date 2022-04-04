@@ -119,7 +119,7 @@ do_install() {
     sudo make install
     cd ${ROOT}
 
-    luarocks_version=luarocks-3.3.1
+    luarocks_version=luarocks-3.8.0
     if [ ! -f "${BUILD_DIR}/${luarocks_version}" ]; then
         cd ${BUILD_DIR}
         wget https://luarocks.org/releases/${luarocks_version}.tar.gz
