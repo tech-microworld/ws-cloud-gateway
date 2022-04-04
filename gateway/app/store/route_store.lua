@@ -52,13 +52,18 @@ local function get_etcd_key(key)
 end
 
 -- 路由配置是否存在
-local function is_exsit(prefix)
-    local etcd_key = get_etcd_key(create_key(prefix))
+local function is_exsit_by_key(key)
+    local etcd_key = get_etcd_key(key)
     local res, err = etcd.get(etcd_key)
     return not err and res.body.kvs and tab_nkeys(res.body.kvs) > 0
 end
 
-_M.is_exsit = is_exsit
+_M.is_exsit_by_key = is_exsit_by_key
+
+-- 路由配置是否存在
+local function is_exsit_by_prefix(prefix)
+    return is_exsit_by_key(create_key(prefix))
+end
 
 -- 查询所有路由配置，返回 list
 local function query_list()
@@ -169,14 +174,15 @@ _M.save_route = save_route
 
 function _M.update_route(route)
     local key = route.key
+    local newKey = create_key(route.prefix)
     -- 检查路由是否已经存在
-    if str.is_blank(key) and is_exsit(route.prefix) then
+    if str.is_blank(key) and is_exsit_by_key(newKey) then
         return false, "路由[" .. route.prefix .. "]配置已存在"
     end
-
+    log.info("save route", json.delay_encode(route))
     local _, err = save_route(route)
     -- 如果路由前缀修改了，需要删除之前的路由配置
-    if err == nil and key and key ~= route.prefix then
+    if err == nil and key and key ~= newKey then
         _, err = remove_route(key)
     end
     if err then

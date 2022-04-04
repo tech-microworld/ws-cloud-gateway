@@ -42,6 +42,7 @@ local function create_rx()
             mapping,
             {
                 paths = {route.prefix},
+                hosts = route.hosts,
                 metadata = route
             }
         )
@@ -51,12 +52,12 @@ local function create_rx()
 end
 
 -- 匹配路由
-function _M.match(url)
+function _M.match(url, match_opts)
     local rx = radix_cache:fetch_cache(rx_key, false, create_rx)
     if not rx then
         return nil
     end
-    local route = rx:match(url)
+    local route = rx:match(url, match_opts)
     log.info("match route: ", json.delay_encode({url, route}))
     return route
 end

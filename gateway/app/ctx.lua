@@ -24,6 +24,7 @@ local ngx = ngx
 local config = require("app.config")
 local tab_nkeys = require("table.nkeys")
 local router = require("app.router")
+local json = require("app.core.json")
 
 local _M = {}
 
@@ -61,7 +62,13 @@ function _M.get_dispatcher()
     local ngx_ctx = ngx.ctx
     local ctx_dispatcher = ngx_ctx.dispatcher
     if not ctx_dispatcher then
-        local route = router.match(ngx.var.uri)
+        local match_opts = {
+            host = ngx.var.http_host,
+            method = ngx.var.request_method,
+            vars = ngx.var
+        }
+        log.info("match_opts: ", json.delay_encode(match_opts))
+        local route = router.match(ngx.var.uri, match_opts)
         if not route or tab_nkeys(route.plugins) == 0 then
             route = {
                 prefix = ngx.var.uri,
