@@ -61,7 +61,12 @@ function _M.get_dispatcher()
     local ngx_ctx = ngx.ctx
     local ctx_dispatcher = ngx_ctx.dispatcher
     if not ctx_dispatcher then
-        local route = router.match(ngx.var.uri)
+        local match_opts = {
+            host = ngx.var.http_host,
+            method = ngx.var.request_method,
+            vars = ngx.var
+        }
+        local route = router.match(ngx.var.uri, match_opts)
         if not route or tab_nkeys(route.plugins) == 0 then
             route = {
                 prefix = ngx.var.uri,

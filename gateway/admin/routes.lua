@@ -17,10 +17,16 @@
 local cjson = require("cjson")
 local ngx = ngx
 local resp = require("app.core.response")
+local tab_nkeys = require("table.nkeys")
 local route_store = require("app.store.route_store")
+
 
 local function list()
     local route_list = route_store.query_list()
+    if not route_list or tab_nkeys(route_list) < 1 then
+        resp.exit(ngx.HTTP_OK, "[]")
+        return
+    end
     resp.exit(ngx.HTTP_OK, route_list)
 end
 

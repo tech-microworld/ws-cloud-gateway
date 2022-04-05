@@ -138,7 +138,6 @@ function _M.capacity(self)
 end
 
 function _M.get_keys(self, max_count)
-    log.info("get keys: ", type(self.lru.get_keys))
     return self.lru:get_keys(max_count)
 end
 

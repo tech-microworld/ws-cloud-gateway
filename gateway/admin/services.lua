@@ -20,6 +20,7 @@ local resp = require("app.core.response")
 local log = require("app.core.log")
 local str_utils = require("app.utils.str_utils")
 local time = require("app.core.time")
+local tab_nkeys = require("table.nkeys")
 local discovery_stroe = require("app.store.discovery_stroe")
 
 local function list()
@@ -28,6 +29,9 @@ local function list()
         log.error("find service nodes error: ", err)
         resp.exit(ngx.HTTP_INTERNAL_SERVER_ERROR, "查询服务节点异常")
         return
+    end
+    if not services or tab_nkeys(services) < 1 then
+        resp.exit(ngx.HTTP_OK, "[]")
     end
     resp.exit(ngx.HTTP_OK, services)
 end

@@ -77,7 +77,7 @@ install_lua_deps() {
 
 install_wrk() {
     export_or_prefix
-    if [ ! -f "${BUILD_DIR}/${lua_version}" ]; then
+    if [ ! -d "${BUILD_DIR}/wrk" ]; then
         git clone https://github.com/wg/wrk.git ${BUILD_DIR}/wrk
         cd ${BUILD_DIR}/wrk
         make
@@ -108,7 +108,7 @@ do_install() {
     sudo apt-get install openresty-debug openresty-resty golang-go
 
     lua_version=lua-5.3.5
-    if [ ! -f "${BUILD_DIR}/${lua_version}" ]; then
+    if [ ! -d "${BUILD_DIR}/${lua_version}" ]; then
         cd ${BUILD_DIR}
         curl -R -O http://www.lua.org/ftp/${lua_version}.tar.gz
         tar -zxf ${lua_version}.tar.gz
@@ -119,7 +119,7 @@ do_install() {
     sudo make install
     cd ${ROOT}
 
-    luarocks_version=luarocks-3.3.1
+    luarocks_version=luarocks-3.8.0
     if [ ! -f "${BUILD_DIR}/${luarocks_version}" ]; then
         cd ${BUILD_DIR}
         wget https://luarocks.org/releases/${luarocks_version}.tar.gz
