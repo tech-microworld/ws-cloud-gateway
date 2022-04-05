@@ -57,7 +57,6 @@ end
 function _M.new(self, plugins, route)
     self.plugins = plugins
     self.route = route
-    log.info("new dispatcher ==> ", cjson.encode(route))
     return setmetatable(self, mt)
 end
 

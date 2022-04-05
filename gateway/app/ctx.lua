@@ -67,7 +67,6 @@ function _M.get_dispatcher()
             method = ngx.var.request_method,
             vars = ngx.var
         }
-        log.info("match_opts: ", json.delay_encode(match_opts))
         local route = router.match(ngx.var.uri, match_opts)
         if not route or tab_nkeys(route.plugins) == 0 then
             route = {
