@@ -46,6 +46,10 @@ clean: default
 	-I=./deps/lib64/lua/5.1 \
 	init/clean.lua
 
+### clean-log:				清理日志
+clean-log: default
+	rm -rf logs/*.log
+
 ### start:				启动服务
 start: default
 	@echo "server start"
