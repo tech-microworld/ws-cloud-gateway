@@ -24,7 +24,6 @@ local ngx = ngx
 local config = require("app.config")
 local tab_nkeys = require("table.nkeys")
 local router = require("app.router")
-local json = require("app.core.json")
 
 local _M = {}
 

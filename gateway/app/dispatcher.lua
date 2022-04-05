@@ -14,10 +14,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-local cjson = require("cjson")
 local ngx = ngx
 local call_utils = require("app.utils.call_utils")
-local log = require("app.core.log")
 local setmetatable = setmetatable
 
 local _M = {}
