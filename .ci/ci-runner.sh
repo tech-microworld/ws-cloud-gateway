@@ -77,7 +77,7 @@ install_lua_deps() {
 
 install_wrk() {
     export_or_prefix
-    if [ ! -f "${BUILD_DIR}/${lua_version}" ]; then
+    if [ ! -f "${BUILD_DIR}/wrk" ]; then
         git clone https://github.com/wg/wrk.git ${BUILD_DIR}/wrk
         cd ${BUILD_DIR}/wrk
         make
